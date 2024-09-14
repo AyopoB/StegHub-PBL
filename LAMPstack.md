@@ -50,7 +50,7 @@ then connect to the instance  with
 
 Now connecting to the EC2 instance with terminal is successful
 
-![inbound rules](images/ubuntu%20terminal.png)
+![inbound rules](Images/ubuntu%20terminal.png)
 
 ## STEP 1 
 **Installing Apache**
@@ -68,10 +68,10 @@ To install Apache, we use the Terminal(GitBash in this case)
 
  ```sudo systemctl status apache2```
 
- ![alt text](images/Apache-running.png)
+ ![alt text](Images/Apache-running.png)
 
  Open your EC2 instance on the Console, copy the public IP address and paste to your browser.
- ![alt text](images/public%20url%20apache.png)
+ ![alt text](Images/public%20url%20apache.png)
  This shows the  server is up and accessible online
  
 ## STEP 2
@@ -88,18 +88,18 @@ Had to use a Alter user command to set password for root user
 
 ```ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';```
 
-![alt text](images/mysql-secure.png)
+![alt text](Images/mysql-secure.png)
 After which I  exited the mysql console, now back to my Ubuntu server. I runned:
 
 ```sudo mysql_secure_installation```
 
-![alt text](images/mysqlsecureinstall.png) 
+![alt text](Images/mysqlsecureinstall.png) 
 The above  prompts with configurations for securing the MySQL server.
 After  which I typed 
 
 ```sudo mysql -p```
 
-![alt text](images/mysqlpwd.png)
+![alt text](Images/mysqlpwd.png)
 It requested for the newly created password
 
 
@@ -117,12 +117,12 @@ The command below was used to install the above packages
 
 ```sudo apt install php libapache2-mod-php php-mysql```
 
-![alt text](images/PHP%20install.png)
+![alt text](Images/PHP%20install.png)
 when installation is finished
 Check the version with :
 
 ```php -v```
-![alt text](images/phpver.png)
+![alt text](Images/phpver.png)
 
 At this point, The LAMP Stack is fully installed.
 
@@ -158,23 +158,23 @@ which created a blank file
 The above was typed into the blank file, after which it was saved and the vi editor was exited.
 
 I then used the a2ensite command to enable the new virtual host
-![alt text](images/enablevhost.png)
+![alt text](Images/enablevhost.png)
 
 After which Apache's default website was disabled
-![alt text](images/disableapachedef.png)
+![alt text](Images/disableapachedef.png)
 
 Confirmed the config didn't contain any syntax error
-![alt text](images/config%20tst.png)
+![alt text](Images/config%20tst.png)
 
 Finally, Apache was reloaded so the changes take effect
-![alt text](images/reloadapache.png)
+![alt text](Images/reloadapache.png)
 
 The website was empty, so i created an index.html file using echo and the command below:
 
 ```  sudo echo 'Hello LAMP from hostname' $(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metada-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-hostname) 'With public IP' $(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-ipv4) > /var/www/mylampproject/index.html```
 
  Open your EC2 instance on the Console, copy the public IP address and paste to your browser.
- ![alt text](images/test%20host.png)
+ ![alt text](Images/test%20host.png)
 
 ## STEP 5
 **Enabling PHP on the website**
@@ -192,7 +192,7 @@ Changed the existing one to the below.
     DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm
 </IfModule>
 ```
-![alt text](images/changephp0.png)
+![alt text](Images/changephp0.png)
 After the file  was edited, the apache server was reloaded to reflect the changes.
 ```
 sudo systemctl reload apache2
@@ -208,7 +208,7 @@ after which i added to the  blank file created:
 phpinfo();
 ```
 I saved the file, went back to the public URL, refreshed the Web page
-![alt text](images/php%20ino.png)
+![alt text](Images/php%20ino.png)
 the above page was the result
 This confirms that the PHP installation works fine
 
@@ -217,7 +217,7 @@ For security reasons the index.php page with php info has to be removed, We do t
 sudo rm /var/www/your_domain/info.php
 ```
 We refresh the webpage and it is back to:
-![alt text](images/test%20host.png).
+![alt text](Images/test%20host.png).
 
 
 
