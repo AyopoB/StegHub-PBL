@@ -25,7 +25,7 @@ Connect to the instance  through your Terminal  by running
 Running just the above may not give desired results, so we need to to our AWS instance on the Console
 locate Security group, Edit the inbound rules as shown below
 
-![inbound rules](images/edit%20the%20inbound%20rules.png)
+![inbound rules](Images/edit%20the%20inbound%20rules.png)
 
 After doing so, Run 
 
