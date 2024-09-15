@@ -71,7 +71,9 @@ To install Apache, we use the Terminal(GitBash in this case)
  ![alt text](Images/Apache-running.png)
 
  Open your EC2 instance on the Console, copy the public IP address and paste to your browser.
+ 
  ![alt text](Images/public%20url%20apache.png)
+ 
  This shows the  server is up and accessible online
  
 ## STEP 2
@@ -89,17 +91,20 @@ Had to use a Alter user command to set password for root user
 ```ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';```
 
 ![alt text](Images/mysql-secure.png)
-After which I  exited the mysql console, now back to my Ubuntu server. I runned:
+
+After which I  exited the mysql console, now back to my Ubuntu server. I ran:
 
 ```sudo mysql_secure_installation```
 
 ![alt text](Images/mysqlsecureinstall.png) 
+
 The above  prompts with configurations for securing the MySQL server.
 After  which I typed 
 
 ```sudo mysql -p```
 
 ![alt text](Images/mysqlpwd.png)
+
 It requested for the newly created password
 
 
@@ -118,10 +123,12 @@ The command below was used to install the above packages
 ```sudo apt install php libapache2-mod-php php-mysql```
 
 ![alt text](Images/PHP%20install.png)
+
 when installation is finished
 Check the version with :
 
 ```php -v```
+
 ![alt text](Images/phpver.png)
 
 At this point, The LAMP Stack is fully installed.
@@ -158,15 +165,19 @@ which created a blank file
 The above was typed into the blank file, after which it was saved and the vi editor was exited.
 
 I then used the a2ensite command to enable the new virtual host
+
 ![alt text](Images/enablevhost.png)
 
 After which Apache's default website was disabled
+
 ![alt text](Images/disableapachedef.png)
 
 Confirmed the config didn't contain any syntax error
+
 ![alt text](Images/config%20tst.png)
 
 Finally, Apache was reloaded so the changes take effect
+
 ![alt text](Images/reloadapache.png)
 
 The website was empty, so i created an index.html file using echo and the command below:
@@ -174,6 +185,7 @@ The website was empty, so i created an index.html file using echo and the comman
 ```  sudo echo 'Hello LAMP from hostname' $(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metada-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-hostname) 'With public IP' $(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-ipv4) > /var/www/mylampproject/index.html```
 
  Open your EC2 instance on the Console, copy the public IP address and paste to your browser.
+ 
  ![alt text](Images/test%20host.png)
 
 ## STEP 5
@@ -193,6 +205,7 @@ Changed the existing one to the below.
 </IfModule>
 ```
 ![alt text](Images/changephp0.png)
+
 After the file  was edited, the apache server was reloaded to reflect the changes.
 ```
 sudo systemctl reload apache2
@@ -208,7 +221,9 @@ after which i added to the  blank file created:
 phpinfo();
 ```
 I saved the file, went back to the public URL, refreshed the Web page
+
 ![alt text](Images/php%20ino.png)
+
 the above page was the result
 This confirms that the PHP installation works fine
 
@@ -217,6 +232,7 @@ For security reasons the index.php page with php info has to be removed, We do t
 sudo rm /var/www/your_domain/info.php
 ```
 We refresh the webpage and it is back to:
+
 ![alt text](Images/test%20host.png).
 
 
