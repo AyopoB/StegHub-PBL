@@ -43,6 +43,7 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 ```
 - ![](img/curl%20nodesource1.png)
 - ![](img/curl%20nodesource2.png)
+
 Install Node.js:
 ```bash
 sudo apt-get install -y nodejs
