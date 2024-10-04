@@ -43,6 +43,7 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 ```
 - ![](img/curl%20nodesource1.png)
 - ![](img/curl%20nodesource2.png)
+
 Install Node.js:
 ```bash
 sudo apt-get install -y nodejs
@@ -688,7 +689,7 @@ Tada!!!, The client(Browser) should display  and be functional as shown in the s
 - Backend testing with Postman proved invaluable, allowing me to identify and address issues at an early stage. This saved time and reduced complexity during frontend integration.
 - Following best practices such as secure database connection management and the use of environment variables is essential for production deployments on platforms like AWS.
 
-By overcoming these challenges and taking proactive steps to ensure efficiency and security, I have gained deeper insight into building and deploying MERN stack applications on cloud infrastructure.
+By overcoming these challenges and taking proactive steps to ensure efficiency, I have gained deeper insight into building and deploying MERN stack applications on cloud infrastructure.
 
 ---
 
