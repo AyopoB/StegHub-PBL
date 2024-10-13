@@ -6,7 +6,7 @@ In this project, we deploy and configure an Apache Load Balancer on an Ubuntu 24
 This project extends the [DevOps Tooling Website Solution](https://github.com/AyopoB/StegHub-PBL/tree/main/DevOps-tooling-website-solution), where we previously deployed a website across multiple servers. Now, by implementing a load balancing solution using Apache, we aim to distribute traffic evenly among the web servers, thereby improving the scalability and reliability of our application.
 
 
-![](image-21-1024x681.png)
+![](img/image-21-1024x681.png)
 
 
 ## Steps Involved
@@ -255,7 +255,7 @@ curl http://Web2
 
 The Setup now looks like this:
 
-![](image-23-993x1024.png)
+![](img/image-23-993x1024.png)
 
 
 ## Lessons Learned:
