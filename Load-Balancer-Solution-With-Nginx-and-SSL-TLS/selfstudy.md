@@ -142,3 +142,77 @@ DNS (Domain Name System) record types define how domain names are mapped to IP a
 - **CAA**: Restricts SSL/TLS certificate issuance.
   
 These DNS records are foundational for website functionality, security, and communication over the internet.
+
+
+---
+
+
+### What is `cron`?
+`cron` is a time-based job scheduling system in Unix-like operating systems. It allows users to run scripts or commands at specified intervals or times. It's often used for automation tasks, like backups, system maintenance, or recurring processes.
+
+### Cron Syntax:
+Cron jobs are defined in a file called the **crontab**. Each line in the crontab file represents a job, and the syntax follows this format:
+
+```
+*  *  *  *  *  command-to-be-executed
+|  |  |  |  |
+|  |  |  |  ----- Day of the week (0 - 7) (Sunday=0 or 7)
+|  |  |  ------- Month (1 - 12)
+|  |  --------- Day of the month (1 - 31)
+|  ----------- Hour (0 - 23)
+-------------- Minute (0 - 59)
+```
+
+- **Example**: To run a script every day at 2 AM:
+  ```
+  0 2 * * * /path/to/script.sh
+  ```
+
+### Special Characters in Cron:
+- `*`: Every unit of time (minute, hour, day, etc.).
+- `,`: Used to specify multiple values (e.g., "1,2,3" means the 1st, 2nd, and 3rd minute).
+- `-`: Range of values (e.g., "1-5" means 1st to 5th minute).
+- `/`: Step values (e.g., "*/10" means every 10 minutes).
+
+### Special Cron Strings:
+- `@reboot`: Runs once after reboot.
+- `@daily`: Equivalent to `0 0 * * *` (midnight every day).
+- `@hourly`: Equivalent to `0 * * * *` (every hour).
+- `@weekly`: Equivalent to `0 0 * * 0` (midnight on Sunday).
+- `@monthly`: Equivalent to `0 0 1 * *` (midnight on the first of every month).
+
+### Example Cron Jobs:
+1. **Run a script every day at 5 PM**:
+   ```
+   0 17 * * * /path/to/script.sh
+   ```
+2. **Run a backup every Sunday at 1 AM**:
+   ```
+   0 1 * * 0 /path/to/backup.sh
+   ```
+3. **Run a task every 15 minutes**:
+   ```
+   */15 * * * * /path/to/task.sh
+   ```
+
+### Managing Crontab:
+- **Edit crontab**:
+  ```
+  crontab -e
+  ```
+- **List current cron jobs**:
+  ```
+  crontab -l
+  ```
+- **Remove a crontab entry**:
+  ```
+  crontab -r
+  ```
+
+### Logs and Monitoring:
+Cron logs are usually stored in `/var/log/syslog` (for most Linux systems). You can check if a cron job ran successfully by viewing this log:
+
+```
+grep CRON /var/log/syslog
+```
+
