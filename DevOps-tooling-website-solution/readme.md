@@ -15,8 +15,13 @@ This project involved setting up logical volumes on the NFS server, configuring 
 
 ## Step 1: Prepare NFS Server
 1. Launch a new EC2 instance with Red Hat Enterprise Linux 9 as the operating system.
+
+
 ![](img/nhs%20server.png)
+
+
 - SSH into the server:
+  
 ![](img/ssh.png)
 
 2. Configure LVM on the server.
