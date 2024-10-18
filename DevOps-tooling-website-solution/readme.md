@@ -527,7 +527,7 @@ sudo vi /var/www/html/functions.php
 $db = mysqli_connect('172.31.41.188', 'webaccess', 'Password.1', 'tooling');
 ```
 
-- $db = mysqli_connect('<private-ip-of-DB-server>', 'webaccess', 'Password.1', 'tooling');
+- $db = mysqli_connect('private-ip-of-DB-server', 'username', 'password', 'Db name');
 
 
 ![](img/functionsphp.png)
