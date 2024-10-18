@@ -546,6 +546,8 @@ sudo yum install mysql -y
 ```bash
 sudo mysql -h 172.31.41.188 -u webaccess -p tooling < tooling-db.sql
 ```
+>cd into tooling directory
+
 sudo mysql -h 172.31.41.188 -u webaccess -p tooling < tooling-db.sql
 - Access the database server from the Web Server:
 ```bash
