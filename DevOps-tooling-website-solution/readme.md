@@ -356,7 +356,7 @@ This strategy will enable us to maintain stateless web servers, allowing for the
 sudo mkdir /var/www
 sudo mount -t nfs -o rw,nosuid 172.31.41.225:/mnt/apps /var/www
 ```
-> sudo mount -t nfs -o rw,nosuid <private-Ip-of-nfs-server>:/mnt/apps /var/www
+    -  sudo mount -t nfs -o rw,nosuid <private-Ip-of-nfs-server>:/mnt/apps /var/www
 
 
 4. Verify that NFS was mounted successfully by running:
