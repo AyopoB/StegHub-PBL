@@ -15,8 +15,13 @@ This project involved setting up logical volumes on the NFS server, configuring 
 
 ## Step 1: Prepare NFS Server
 1. Launch a new EC2 instance with Red Hat Enterprise Linux 9 as the operating system.
+
+
 ![](img/nhs%20server.png)
+
+
 - SSH into the server:
+  
 ![](img/ssh.png)
 
 2. Configure LVM on the server.
@@ -356,6 +361,9 @@ This strategy will enable us to maintain stateless web servers, allowing for the
 sudo mkdir /var/www
 sudo mount -t nfs -o rw,nosuid 172.31.41.225:/mnt/apps /var/www
 ```
+    -  sudo mount -t nfs -o rw,nosuid <private-Ip-of-nfs-server>:/mnt/apps /var/www
+
+
 4. Verify that NFS was mounted successfully by running:
 ```bash
 df -h
@@ -523,6 +531,10 @@ sudo vi /var/www/html/functions.php
 
 $db = mysqli_connect('172.31.41.188', 'webaccess', 'Password.1', 'tooling');
 ```
+
+- $db = mysqli_connect('private-ip-of-DB-server', 'username', 'password', 'Db name');
+
+
 ![](img/functionsphp.png)
 
 10. Apply Database Schema
@@ -534,6 +546,8 @@ sudo yum install mysql -y
 ```bash
 sudo mysql -h 172.31.41.188 -u webaccess -p tooling < tooling-db.sql
 ```
+>cd into tooling directory
+
 sudo mysql -h 172.31.41.188 -u webaccess -p tooling < tooling-db.sql
 - Access the database server from the Web Server:
 ```bash
