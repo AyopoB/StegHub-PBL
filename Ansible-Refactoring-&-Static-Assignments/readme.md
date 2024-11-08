@@ -246,6 +246,9 @@ Alternatively, if you choose to create the directory structure manually, or if y
     └── templates
 ```
 
+
+![](img/roles%20webserver.png)
+
 ### **3.3 Updating Inventory for UAT Servers**
 
 1. **Edit Inventory File**  
@@ -263,6 +266,8 @@ Alternatively, if you choose to create the directory structure manually, or if y
    ```ini
    roles_path = /home/ubuntu/ansible-config-mgt/roles
    ```
+
+   ![](img/etc-ansible-config.png)
 
 ### **3.5 Adding Logic to the Webserver Role**
 
@@ -320,13 +325,97 @@ Next, we will define the tasks that our webserver role will execute to configure
 - **Start the HTTPD Service**: The Apache web server service is started to serve the cloned website.
 - **Cleanup**: The temporary directory created during the cloning process is removed to keep the server tidy.
 
-### **3.7 Running the Role**
 
-Once the tasks are defined, you can execute the Ansible role on your newly configured UAT web servers using the following command:
-```bash
-ansible-playbook -i inventory/uat.yml playbooks/site.yml
-```
 
-This will apply the defined configuration to both Web1-UAT and Web2-UAT servers, setting them up as functional web servers.
+
 
 ---
+
+### Step 4: Reference the `Webserver` Role
+
+1. **Create `uat-webservers.yml`**:
+   Inside the `static-assignments` folder, you’ll create a new playbook file called `uat-webservers.yml`. This file will assign the `webserver` role to your UAT web servers.
+   
+   In `ansible-config-mgt/static-assignments/uat-webservers.yml`, add:
+   ```yaml
+   ---
+   - hosts: uat-webservers
+     roles:
+       - webserver
+   ```
+
+2. **Update `site.yml`**:
+   Since `site.yml` serves as the central entry point for your Ansible playbooks, you need to include the new `uat-webservers.yml` playbook so that it’s executed as part of the `site.yml` setup.
+
+   Open `ansible-config-mgt/playbooks/site.yml` and add the following configuration:
+   ```yaml
+   ---
+   - hosts: all
+   - import_playbook: ../static-assignments/common.yml
+   - hosts: uat-webservers
+   - import_playbook: ../static-assignments/uat-webservers.yml
+   ```
+
+### Step 5: Commit, Test, and Deploy
+
+1. **Commit Changes**:
+   After configuring the playbooks, commit the changes in Git:
+   ```bash
+   git add .
+   git commit -m "Added UAT Webservers configuration using Webserver role"
+   git push origin <your-branch-name>
+   ```
+
+   ![](img/git%20push%20origin.png)
+
+2. **Create a Pull Request (PR)**:
+   - Go to GitHub, create a pull request (PR), and merge it into the `master` branch.
+   ![](img/merge%20request.png)
+   - Ensure that your Jenkins job is triggered by the webhook and that two jobs run successfully (indicating the build process was triggered by your commit and deployed to the Jenkins-Ansible server).
+   ![](img/jenkins%20refactor%20build.png)
+
+      -  Sync Local Master Branch
+
+         On your local machine, switch back to main, pull the latest changes, and confirm the merge:
+         ```bash
+         git checkout main
+         git pull origin main
+         ```
+   ![](img/git%20pull%20local.png)
+
+3. **Verify Files on Jenkins-Ansible Server**:
+   After the Jenkins job runs successfully, verify that all necessary files are copied to `/home/ubuntu/ansible-config-mgt/` on the Jenkins-Ansible server.
+
+4. **Run the Playbook**:
+   - SSH into your Jenkins-Ansible server using `ssh-agent` to forward your keys and gain access.
+   - Execute the Ansible playbook targeting the UAT inventory:
+     ```bash
+     cd /home/ubuntu/ansible-config-mgt
+     ```
+     ```bash
+     ansible-playbook -i inventory/uat.yml playbooks/site.yml
+     ```
+
+     ![](img/play%20book%20success'.png)
+
+5. **Verify the Setup**:
+   Once the playbook runs successfully, check if both UAT Web servers are configured correctly. You should be able to access the tooling website from a browser.
+
+   - Visit:
+     ```
+     http://<Web1-UAT-Server-Public-IP-or-Public-DNS-Name>/index.php
+     ```
+
+
+     ![](img/web%20server1%20http.png)
+
+
+   - And:
+     ```
+     http://<Web2-UAT-Server-Public-IP-or-Public-DNS-Name>/index.php
+     ```
+     
+     ![](img/web%20server2%20http.png)
+
+You should see the deployed tooling website if everything is set up correctly on the UAT servers.
+----- 
