@@ -186,6 +186,8 @@ For testing and ensuring modularity, add a new playbook that removes an applicat
 
    - webserver 1
       ![](img/check%20ws%20wbs1.png)
+
+
 ---
 
 This refactoring exercise has demonstrated how to use `import_playbooks` for organizing tasks and creating a modular infrastructure configuration. With one command, you can now manage packages across multiple servers, enhancing efficiency and control in configuration management.
@@ -418,6 +420,10 @@ Next, we will define the tasks that our webserver role will execute to configure
      ![](img/web%20server2%20http.png)
 
 You should see the deployed tooling website if everything is set up correctly on the UAT servers.
+
+   Our setup now looks like this:
+
+   ![alt text](img/image-53-1024x1002.png)
 ---
 
 ## Conclusion
