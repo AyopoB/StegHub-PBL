@@ -414,8 +414,22 @@ Next, we will define the tasks that our webserver role will execute to configure
      ```
      http://<Web2-UAT-Server-Public-IP-or-Public-DNS-Name>/index.php
      ```
-     
+
      ![](img/web%20server2%20http.png)
 
 You should see the deployed tooling website if everything is set up correctly on the UAT servers.
------ 
+---
+
+## Conclusion
+
+By refactoring our Ansible code and enhancing our Jenkins job setup, we have taken significant steps towards creating a cleaner, more modular, and maintainable DevOps infrastructure. The improvements achieved through this project include:
+
+1. **Centralized Artifact Management**: By configuring a dedicated artifact directory on the Jenkins server, we streamlined storage, improved workspace organization, and reduced clutter, which leads to better performance and simpler troubleshooting.
+
+2. **Modular Ansible Playbooks**: The introduction of the `site.yml` entry point with playbook imports allows us to maintain a clear and organized structure for configurations, making it easier to extend and maintain our setup as our infrastructure grows.
+
+3. **Reusable Roles**: Creating and assigning a reusable role, `Webserver`, for the UAT web servers improves efficiency and ensures consistency in configurations across environments. This role-based approach allows us to manage configurations for similar servers effortlessly, promoting flexibility and scalability.
+
+4. **Automated and Continuous Deployment**: Integrating these changes with Jenkins ensures that each update to the codebase is automatically deployed, making the entire setup adaptable to real-time changes with minimal manual intervention.
+
+With this approach, our Ansible and Jenkins configurations are better aligned to handle growing complexity, provide reliable deployments, and enable easy scalability for future projects. This structured setup will support continuous improvement, reduce operational risks, and enhance the efficiency of the entire development and deployment lifecycle.
