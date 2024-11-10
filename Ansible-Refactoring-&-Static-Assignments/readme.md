@@ -338,10 +338,10 @@ Next, we will define the tasks that our webserver role will execute to configure
 1. **Create `uat-webservers.yml`**:
    Inside the `static-assignments` folder, you’ll create a new playbook file called `uat-webservers.yml`. This file will assign the `webserver` role to your UAT web servers.
    
-   In `ansible-config-mgt/static-assignments/uat-webservers.yml`, add:
+   In `ansible-config-mgt/static-assignments/uat_webservers.yml`, add:
    ```yaml
    ---
-   - hosts: uat-webservers
+   - hosts: uat_webservers
      roles:
        - webserver
    ```
@@ -355,7 +355,7 @@ Next, we will define the tasks that our webserver role will execute to configure
    - hosts: all
    - import_playbook: ../static-assignments/common.yml
    - hosts: uat-webservers
-   - import_playbook: ../static-assignments/uat-webservers.yml
+   - import_playbook: ../static-assignments/uat_webservers.yml
    ```
 
 ### Step 5: Commit, Test, and Deploy
