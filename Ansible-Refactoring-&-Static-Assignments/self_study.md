@@ -1,6 +1,4 @@
-Certainly! Here’s a `self-study-notes.md` file to summarize the key elements of this project. This outline can serve as a quick reference guide for understanding the concepts, steps, and configurations used. 
 
----
 
 # Self Study Notes - Ansible Refactoring and Jenkins Job Enhancement
 
