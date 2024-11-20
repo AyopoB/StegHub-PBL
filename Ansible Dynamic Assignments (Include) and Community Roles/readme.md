@@ -131,20 +131,23 @@ In Ansible, we differentiate between **static** and **dynamic** assignments. Her
 
 6. **Update `site.yml` with Dynamic Assignments**:
    Add the `include` directive in `site.yml` to use dynamic variables:
-   ```yaml
-   ---
-   - hosts: all
-     - name: Include dynamic variables
-       tasks:
-         import_playbook: ../static-assignments/common.yml
-         include: ../dynamic-assignments/env-vars.yml
-         tags: - always
-   - import_playbook: ../static-assignments/uat-webservers.yml
-   ```
+```yaml
+---
+# Play for including dynamic variables
+- name: Include dynamic variables
+  hosts: all
+  become: yes
+  tasks:
+    - name: Load dynamic variables
+      include_tasks: ../dynamic-assignments/env-vars.yml
+      tags:
+        - always
+- import_playbook: ../static-assignments/uat-webservers.yml
+```
 
 ![](img/update%20siteyml.png)
 
-git commit to add new changes to githu directory
+git commit to add new changes to github directory
 
 ![](img/1st%20git%20commit.png)
 ---
@@ -173,10 +176,15 @@ For repetitive tasks like setting up a MySQL database, we can leverage community
    ```bash
    ansible-galaxy install geerlingguy.mysql
    ```
+
+   ![](img/install%20geerlingguy%20mysql.png)
+
    Rename the role folder:
    ```bash
    mv geerlingguy.mysql/ mysql
    ```
+
+   ![](img/rename.png)
 
 3. **Edit the Role Variables**:
    In the `roles/mysql/vars/main.yml` file, set up your database configuration, such as the root password, database name, and user credentials:
@@ -195,8 +203,11 @@ mysql_users:
     priv: "(include the added db name).*:ALL"
 
 ```
-    - Follow the instructions in the `README.md` file inside the `mysql` role folder to ensure proper setup for your MySQL instance.
-   - You might need to tweak the configuration depending on your tooling website requirements.
+
+![](img/vars%20main%20sql.png)
+
+- Follow the instructions in the `README.md` file inside the `mysql` role folder to ensure proper setup for your MySQL instance.
+- You might need to tweak the configuration depending on your tooling website requirements.
 
 
 4. **Push Changes to GitHub**:
@@ -218,6 +229,8 @@ mysql_users:
   roles:
     - role: mysql
 ```
+- Next update `site.yml` with `- import_playbook: ../static-assignments/db-servers.yml`
+![](img/db%20servers.png)
 
 Now, if you are satisfied with your codes, you can create a Pull Request on GitHub to merge your `roles-feature` branch into the `main` branch.
 
@@ -236,11 +249,17 @@ To allow flexibility in choosing between **Nginx** and **Apache** load balancers
    mv geerlingguy.nginx nginx
    ```
 
+   ![](img/install%20nginx.png)
+
+   ![](img/rename%20nginx.png)
+
 2. **Install Apache Load Balancer Role**:
    ```bash
    ansible-galaxy install geerlingguy.apache
    mv geerlingguy.apache apache
    ```
+
+   ![](img/install%20apache%20and%20rename.png)
 
 > NB: Since only one load balancer (either Nginx or Apache) will be enabled in each environment, we will use conditional logic in our roles.
 
@@ -258,6 +277,10 @@ To allow flexibility in choosing between **Nginx** and **Apache** load balancers
    load_balancer_is_required: false
    ```
 
+   ![](img/roles%20nginx.png)
+
+   ![](img/default%20apache.png)
+
 3. **Configure Load Balancer Assignments**:
    Create a `loadbalancers.yml` file, Use conditional role execution to decide whether to enable Nginx or Apache based on environment variables:
    ```yaml
@@ -267,18 +290,20 @@ To allow flexibility in choosing between **Nginx** and **Apache** load balancers
        - { role: apache, when: enable_apache_lb and load_balancer_is_required }
    ```
 
+   ![](img/loadbala.png)
+
 4. **Update `site.yml` to Import `loadbalancers.yml`**:
    Insert the following:
    ```yaml
-   - name: Load Balancers assignment
-     hosts: lb
-     tasks:
-       - import_playbook: ../static-assignments/loadbalancers.yml
-         when: load_balancer_is_required
+
+    - import_playbook: ../static-assignments/loadbalancers.yml
+      when: load_balancer_is_required
    ```
 
+![](img/update%20siteyml%202.png)
+
 5. **Environment-Specific Configuration**:
-   In each `env-vars` file, enable either `nginx` or `apache`:
+   In the `env-vars` file, enable either `nginx` or `apache`:
    ```yaml
    enable_nginx_lb: true
    load_balancer_is_required: true
@@ -292,49 +317,288 @@ To allow flexibility in choosing between **Nginx** and **Apache** load balancers
    load_balancer_is_required: true
    ```
 
+![](img/env%20vars.png)
+
+
 6. In the role/nginx/defaults/main.yml file, uncomment the nginx_vhosts, and nginx_upstream section:
 ```bash
 nginx_vhosts:
 # Example vhost below, showing all available options:
- - listen: "80" # default: "80"
-   server_name: "example.com" # default: N/A
-   root: "/var/www/html" # default: N/A
-   index: "index.php index.htm" # default: "index.html index.htm"
+- listen: "80" # default: "80"
+  server_name: "example.com" # default: N/A
+  root: "/var/www/html" # default: N/A
+  index: "index.php index.htm" # default: "index.html index.htm"
+  locations:
+          - path: "/"
+            proxy_pass: "http://myapp1"
+
 #   filename: "example.com.conf" # Can be used to set the vhost filename.
 
-    locations:
-              - path: "/"
-                proxy_pass: "http://myapp1"
+  server_name_redirect: "www.example.com"
+  error_page: ""
+  access_log: ""
+  error_log: ""
+  extra_parameters: ""
+  template: "{{ nginx_vhost_template }}"
+  state: "present"
+  become: yes
 
-#   # Properties that are only added if defined:
-   server_name_redirect: "www.example.com" # default: N/A
-   error_page: ""
-   access_log: ""
-   error_log: ""
-   extra_parameters: "" # Can be used to add extra config blocks (multiline).
-   template: "{{ nginx_vhost_template }}" # Can be used to override the `nginx_vhost_template` per host.
-   state: "present" # To remove the vhost configuration.
+
+nginx_upstreams: 
+- name: myapp1
+  strategy: "ip_hash" # "least_conn", etc.
+  keepalive: 16 # optional
+  servers:
+    - "172.31.26.143 weight=5"
+    - "172.31.18.71 weight=5"
+  become: yes
    ```
 7.Under the nginx_upstream section, you wil need to update the servers address to include your webservers or uat servers.:
 ```bash
-nginx_upstreams:
-  - name: myapp1
-    strategy: "ip_hash" # "least_conn", etc.
-    keepalive: 16 # optional
-    servers:
-      - "<uat-server2-ip-address> weight=5"
-      - "<uat-server1-ip-address> weight=5"
+nginx_upstreams: 
+- name: myapp1
+  strategy: "ip_hash" # "least_conn", etc.
+  keepalive: 16 # optional
+  servers:
+    - "<uat-server1-private-ip> weight=5"
+    - "<uat-server2-private-ip> weight=5"
+  become: yes
 ```
+![](img/nginx%20default%20main.png)
+
+8. **Update `roles/nginx/templates/nginx.conf.j2`**
+
+Comment the line include {{ nginx_vhost_path }}/*;
+
+This line renders the /etc/nginx/sites-enabled/ to the http configuration of Nginx.
+
+Create a server block template in Nginx.conf.j2 for nginx configuration file to override the default in nginx role.
+```yaml
+{% for vhost in nginx_vhosts %}
+    server {
+        listen {{ vhost.listen }};
+        server_name {{ vhost.server_name }};
+        root {{ vhost.root }};
+        index {{ vhost.index }};
+
+    {% for location in vhost.locations %}
+        location {{ location.path }} {
+            proxy_pass {{ location.proxy_pass }};
+        }
+    {% endfor %}
+  }
+{% endfor %}
+```
+
+![](img/conf%20j2.png)
+
+
 
 finally, update the inventory/uat.yml to include the neccesary details for ansible to connect to each of these servers to perform all the roles we have specified. use the code below :
 ```bash
 [db]
-172.31.83.187 ansible_ssh_user=ubuntu
+<db private ip> ansible_ssh_user=ubuntu
 
 [lb]
-172.31.86.165 ansible_ssh_user=ubuntu
+<lb private ip> ansible_ssh_user=ubuntu
 ```
+
+
+
 ---
+## To configure Apache as Loadbalancer
+- in the roles/apache/tasks/main.yml file, wwe need to include a task that tells ansible to first check if nginx is currently running and enabled, if it is, ansible should first stop and disable nginx before proceeding to install and enable apache. this is to avoid confliction and should always free up the port 80 for the required load balancer. use the code beow to achieve this :
+
+```yaml
+- name: Check if nginx is running
+  ansible.builtin.service_facts:
+                     
+- name: Stop and disable nginx if it is running
+  ansible.builtin.service:
+    name: nginx 
+    state: stopped
+    enabled: no
+  when: "'nginx' in services and services['nginx'].state == 'running'"
+  become: yes
+
+```
+
+![](img/apache%20roles%20task%20main.png)
+
+
+# continue here
+
+-  To use apache as a load balancer, we will need to allow certain apache modules that will enable the load balancer. this is the APACHE A2ENMOD.
+In the roles/apache/tasks/configure-debian.yml file, Create a task to install and enable the required apache a2enmod modules, use the code below :
+```yaml
+- name: Enable Apache modules
+  ansible.builtin.shell:
+    cmd: "a2enmod {{ item }}"
+  loop:
+    - rewrite
+    - proxy
+    - proxy_balancer
+    - proxy_http
+    - headers
+    - lbmethod_bytraffic
+    - lbmethod_byrequests
+  notify: restart apache
+  become: yes
+```
+
+![](img/configure%20debian%201.png)
+
+- Create another task to update the apache configurations with required code block needed for the load balancer to function. use the code below :
+
+```yaml
+- name: Insert load balancer configuration into Apache virtual host
+  ansible.builtin.blockinfile:
+  path: /etc/apache2/sites-available/000-default.conf
+  block: |
+    <Proxy "balancer://mycluster">
+      BalancerMember http://172.31.26.143:80
+      BalancerMember http://172.31.18.71:80
+      ProxySet lbmethod=byrequests
+    </Proxy>
+    ProxyPass "/" "balancer://mycluster/"
+    ProxyPassReverse "/" "balancer://mycluster/"
+  marker: "# {mark} ANSIBLE MANAGED BLOCK"
+  insertbefore: "</VirtualHost>"
+notify: restart apache
+become: yes
+```
+
+![](img/configure%20debian%202.png)
+
+## Configure your webserver roles to install php and all its dependencies , as well as cloning your tooling website from your github repo
+
+In the roles/webserver/tasks/main.yml ,
+write the following tasks. use the code below :
+
+```yaml
+- name: Install Apache
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.yum:
+    name: "httpd"
+    state: present
+
+- name: Install Git
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.yum:
+    name: "git"
+    state: present
+
+- name: Install EPEL release
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
+
+- name: Install dnf-utils and Remi repository
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: sudo dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-9.rpm -y
+
+- name: Reset PHP module
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: sudo dnf module reset php -y
+
+- name: Enable PHP 7.4 module
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: sudo dnf module enable php:remi-7.4 -y
+
+- name: Install PHP and extensions
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.yum:
+    name:
+      - php
+      - php-opcache
+      - php-gd
+      - php-curl
+      - php-mysqlnd
+    state: present
+
+- name: Install MySQL client
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.yum:
+    name: "mysql"
+    state: present
+
+- name: Start PHP-FPM service
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.service:
+    name: php-fpm
+    state: started
+
+- name: Enable PHP-FPM service
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.service:
+    name: php-fpm
+    enabled: true
+
+- name: Set SELinux boolean for httpd_execmem
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: sudo setsebool -P httpd_execmem 1
+
+- name: Clone a repo
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.git:
+    repo: https://github.com/AyopoB/tooling.git
+    dest: /var/www/html
+    force: yes
+
+- name: Copy HTML content to one level up
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  command: cp -r /var/www/html/html/ /var/www/
+
+- name: Start httpd service, if not started
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.service:
+    name: httpd
+    state: started
+
+- name: Recursively remove /var/www/html/html directory
+  remote_user: ec2-user
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    path: /var/www/html/html
+    state: absent
+
+```
+
+Update roles/nginx/tasks/main.yml with the code below to create a task that check and stop apache if it is running
+
 
 ## **Testing and Validation**
 
