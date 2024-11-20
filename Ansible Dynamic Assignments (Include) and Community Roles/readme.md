@@ -320,7 +320,31 @@ To allow flexibility in choosing between **Nginx** and **Apache** load balancers
 ![](img/env%20vars.png)
 
 
-6. In the role/nginx/defaults/main.yml file, uncomment the nginx_vhosts, and nginx_upstream section:
+6. **For nginx**
+
+- In the roles/nginx/tasks/main.yml file, create a similar task like we did above to check if apache is active and enabled, if it is, it should disable and stop apache before proceeding with the tasks of installing nginx. use the code below :
+
+```yaml
+- name: Check if Apache is running
+  ansible.builtin.service_facts:
+                     
+- name: Stop and disable Apache if it is running
+  ansible.builtin.service:
+    name: apache2 
+    state: stopped
+    enabled: no
+  when: "'apache2' in services and services['apache2'].state == 'running'"
+  become: yes
+```
+
+![](img/nginx%20task%20main.png)
+
+- In the roles/nginx/handlers/main.yml file, set nginx to always perform the tasks with sudo privileges, use the function : `become: yes` to achieve this
+    -  Do the same for all tasks that require sudo privileges
+
+    
+
+- In the role/nginx/defaults/main.yml file, uncomment the nginx_vhosts, and nginx_upstream section:
 ```bash
 nginx_vhosts:
 # Example vhost below, showing all available options:
@@ -353,7 +377,7 @@ nginx_upstreams:
     - "172.31.18.71 weight=5"
   become: yes
    ```
-7.Under the nginx_upstream section, you wil need to update the servers address to include your webservers or uat servers.:
+7. Under the nginx_upstream section, you wil need to update the servers address to include your webservers or uat servers.:
 ```bash
 nginx_upstreams: 
 - name: myapp1
@@ -405,8 +429,7 @@ finally, update the inventory/uat.yml to include the neccesary details for ansib
 
 
 
----
-## To configure Apache as Loadbalancer
+9. To configure Apache as Loadbalancer
 - in the roles/apache/tasks/main.yml file, wwe need to include a task that tells ansible to first check if nginx is currently running and enabled, if it is, ansible should first stop and disable nginx before proceeding to install and enable apache. this is to avoid confliction and should always free up the port 80 for the required load balancer. use the code beow to achieve this :
 
 ```yaml
@@ -426,7 +449,7 @@ finally, update the inventory/uat.yml to include the neccesary details for ansib
 ![](img/apache%20roles%20task%20main.png)
 
 
-# continue here
+
 
 -  To use apache as a load balancer, we will need to allow certain apache modules that will enable the load balancer. this is the APACHE A2ENMOD.
 In the roles/apache/tasks/configure-debian.yml file, Create a task to install and enable the required apache a2enmod modules, use the code below :
@@ -456,8 +479,8 @@ In the roles/apache/tasks/configure-debian.yml file, Create a task to install an
   path: /etc/apache2/sites-available/000-default.conf
   block: |
     <Proxy "balancer://mycluster">
-      BalancerMember http://172.31.26.143:80
-      BalancerMember http://172.31.18.71:80
+      BalancerMember http://<webserver1-private-ip-address>:80
+      BalancerMember http://<webserver2-private-ip-address>:80
       ProxySet lbmethod=byrequests
     </Proxy>
     ProxyPass "/" "balancer://mycluster/"
@@ -469,6 +492,9 @@ become: yes
 ```
 
 ![](img/configure%20debian%202.png)
+
+
+
 
 ## Configure your webserver roles to install php and all its dependencies , as well as cloning your tooling website from your github repo
 
@@ -604,18 +630,18 @@ Update roles/nginx/tasks/main.yml with the code below to create a task that chec
 
 1. **Setup Inventory for Each Environment**:
    Update inventory files to include environment-specific servers.
+```yaml
+[uat-webservers]
+<server1-ip-address> ansible_ssh_user=<ec2-username> 
+<server2-ip-address> ansible_ssh_user=<ec2-username> 
 
-1. **Check for Syntax Errors**:
-   Before running the playbook, check for syntax errors:
-   ```bash
-   ansible-playbook site.yml --syntax-check
-   ```
+[lb]
+<lb-instance-ip> ansible_ssh_user=<ec2-username> 
 
-   1. **Dry Run the Playbook**:
-   Run a dry run to see what changes would be applied without making any actual modifications:
-   ```bash
-   ansible-playbook site.yml -C -i inventory/uat
-   ```
+[db-servers]
+<db-instance-ip> ansible_ssh_user=<ec2-username>
+
+```
 
 2. **Run Playbooks**:
    Execute playbooks for different environments to validate that variables and roles are correctly applied.
@@ -635,6 +661,8 @@ Update roles/nginx/tasks/main.yml with the code below to create a task that chec
 5. **Merge Pull Request**:
    On GitHub, create a Pull Request to merge the `roles-feature` branch into `main` and review the changes.
 ---
+
+
 
 ## **Conclusion**
 
