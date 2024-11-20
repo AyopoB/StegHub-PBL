@@ -650,13 +650,26 @@ Update roles/nginx/tasks/main.yml with the code below to create a task that chec
    ansible-playbook -i inventory/uat.yml playbooks/site.yml
    ```
 
-4. **Commit the Updated Roles**:
+  ![](img/playbook%20successful.png)
+
+3. **Commit the Updated Roles**:
+
    After testing, commit the changes to GitHub:
    ```bash
    git add .
    git commit -m "Add MySQL and load balancer roles with conditional execution"
    git push origin roles-feature
    ```
+   ![](img/git%20status.png)
+
+
+4. Test Loadbalancer public IP on browser:
+
+![](img/lb%20web%20browser.png)
+
+- Confirm tooling database was created in DB server:
+
+![](img/confirm%20db.png)
 
 5. **Merge Pull Request**:
    On GitHub, create a Pull Request to merge the `roles-feature` branch into `main` and review the changes.
