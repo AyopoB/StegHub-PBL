@@ -681,14 +681,7 @@ Update roles/nginx/tasks/main.yml with the code below to create a task that chec
 5. **Merge Pull Request**:
    On GitHub, create a Pull Request to merge the `roles-feature` branch into `main` and review the changes.
 
-6. Access the uat-webservers and update the website's configuration with the database and user credentials to connect to the database (in /var/www/html/function.php file):
 
-```bash
-sudo vi /var/www/html/functions.php
-```
-
-
----
 
 
 
