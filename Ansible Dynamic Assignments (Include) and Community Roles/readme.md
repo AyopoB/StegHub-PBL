@@ -388,7 +388,14 @@ nginx_upstreams:
     - "<uat-server2-private-ip> weight=5"
   become: yes
 ```
+
 ![](img/nginx%20default%20main.png)
+
+- For `handlers/main.yml` and `tasks/vhosts.yml` add sudo privileges with `become: yes` to each tasks:
+
+![](img/handlers%20main.png)
+
+![](img/update%20vhost.png)
 
 8. **Update `roles/nginx/templates/nginx.conf.j2`**
 
@@ -673,6 +680,14 @@ Update roles/nginx/tasks/main.yml with the code below to create a task that chec
 
 5. **Merge Pull Request**:
    On GitHub, create a Pull Request to merge the `roles-feature` branch into `main` and review the changes.
+
+6. Access the uat-webservers and update the website's configuration with the database and user credentials to connect to the database (in /var/www/html/function.php file):
+
+```bash
+sudo vi /var/www/html/functions.php
+```
+
+
 ---
 
 
@@ -690,23 +705,3 @@ In this project, we utilized **dynamic assignments** to configure environment-sp
 
 
 
----
-# Play 1: Loads dynamic variables for all hosts
-- name: Include dynamic variables
-  hosts: all
-  tasks:
-    - name: Load dynamic variables
-      include_tasks: ../dynamic-assignments/env-vars.yml
-      tags:
-        - always
-
-# Play 2: Imports common configuration for all hosts
-- name: Import common playbook
-  import_playbook: ../static-assignments/common.yml
-
-# Play 3: Specific configuration for UAT webservers only
-- name: Configure UAT webservers
-  hosts: uat-webservers
-  tasks:
-    - name: Import UAT specific tasks
-      import_tasks: ../static-assignments/uat-webservers.yml
