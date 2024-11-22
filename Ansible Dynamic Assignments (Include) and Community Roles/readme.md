@@ -204,7 +204,7 @@ mysql_users:
 
 ```
 
-![](img/vars%20main%20sql.png)
+![](img/roles%20var%20mysql%20main.png)
 
 - Follow the instructions in the `README.md` file inside the `mysql` role folder to ensure proper setup for your MySQL instance.
 - You might need to tweak the configuration depending on your tooling website requirements.
