@@ -10,6 +10,7 @@ This document is designed to provide a foundational understanding of Continuous 
 
 1. **Continuous Integration (CI):** Ensuring that developers’ code changes are frequently integrated into a shared repository to avoid conflicts and enable early defect detection.
 
+
 2. **Continuous Delivery (CD):** Guaranteeing that the codebase is always in a deployable state and that deployment to production is manual but straightforward.
 
 3. **Continuous Deployment (also CD):** Extending automation to the production release, making the deployment process fully automated.
