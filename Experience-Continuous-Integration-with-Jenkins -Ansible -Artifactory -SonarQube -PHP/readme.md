@@ -160,8 +160,6 @@ By the end of this project, we will have a solid understanding of how CI/CD pipe
 
 ## Continuous Integration and Delivery Pipeline with Ansible
 
-### Introduction
-
 As part of the ongoing infrastructure development with Ansible, which began in **[Ansible Configuration Management Project](https://github.com/AyopoB/StegHub-PBL/tree/main/Ansible-Configuration-Management)**, this project focuses on creating a pipeline that simulates Continuous Integration (CI) and Continuous Delivery (CD). The target end-to-end CI/CD pipeline is designed to manage multiple environments efficiently, ensuring a seamless flow from development to production.
 
 ## Previous projects leading up to this in order
@@ -342,7 +340,7 @@ SonarQube is an open-source platform developed by SonarSource for continuous ins
 - **Improved Maintainability:** Highlights code smells that could complicate future modifications.
 - **Enhanced Security:** Identifies potential vulnerabilities early in the development lifecycle.
 
-**Learn More:** Watch a [short description](#) to get an overview of SonarQube’s functionality. More hands-on experience with SonarQube and Jenkins will follow.
+**Learn More:** Watch a [short description](https://www.youtube.com/watch?v=vE39Fg8pvZg&feature=youtu.be) to get an overview of SonarQube’s functionality. More hands-on experience with SonarQube and Jenkins will follow.
 
 ### Artifactory Role
 
@@ -352,7 +350,7 @@ Artifactory by JFrog is a binary repository manager. It extends the source code 
 - **Automation Ready:** Facilitates automated build, test, and deployment pipelines.
 - **Scalability:** Supports large teams and enterprise-level projects.
 
-**Learn More:** Watch the [first 10 minutes](#) of this video to understand Artifactory’s core capabilities.
+**Learn More:** Watch the [first 10 minutes](https://www.youtube.com/watch?v=upJS4R6SbgM) of this video to understand Artifactory’s core capabilities.
 
 ## Configuring Ansible for Jenkins Deployment
 
@@ -361,17 +359,71 @@ Previously, Ansible commands were executed manually from the CLI. With Jenkins, 
 ### Steps to Configure Jenkins with Ansible
 
 1. **Install and Open Blue Ocean Plugin:** Navigate to the Jenkins URL from our Jenkins-ansible AWS instance  from **[Ansible Configuration Management Project](https://github.com/AyopoB/StegHub-PBL/tree/main/Ansible-Configuration-Management)** and install the Blue Ocean plugin for an enhanced UI.
+   - On Jenkins url, go to Manage Jenkins and click plugins
+
+   ![](img/manage%20jenkins.png)
+
+   - Under available plugins, search for 'Blue Ocean' then click install.
+
+   ![](img/search%20blue%20ocean.png)
+
+   - on the Jenkins Dashboard, you should see 'Open blue ocean'
+
+   ![](img/blue%20ocean%20installed.png)
 
 2. **Create a New Pipeline:**
+    - Click 'Open Blue Ocean', and then click on 'New Pipeline' Button
+
+    ![](img/open%20blue%20ocean.png)
+
     - Connect Jenkins to your GitHub repository.
+      - click github
+
+      ![](img/click%20github.png)
+
     - Login to GitHub and generate an access token.
+
+      - Navigate to settings on your Github.
+
+      ![](img/on%20github%20click%20settings.png)
+
+      - Then Developers settings
+
+      ![](img/developers%20settings.png)
+
+      - Navigate to personal access tokens, Click on personal access token classic to generate token.
+
+      ![](img/personal%20access%20tokens.png)
+
+      - Click as shown in the screenshots below then save and generate new token
+
+      ![](img/new%20personal%20access%20token%20classic1%20.png)
+
+      ![](img/new%20personal%20access%20token%20classic2%20.png)
+
+
+
     - Copy and paste the token into Jenkins to establish a connection.
+
+      ![](img/paste%20access%20token.png)
+
+      - click create new pipeline
+
+      ![](img/click%20create%20new%20pipeline.png)
+
+
 3. **Create a `Jenkinsfile`:**
 
    At this point you may not have a Jenkinsfile in the Ansible repository, so Blue Ocean will attempt to give you some guidance to create one. But we do not need that. We will rather create one ourselves. So, click on Administration to exit the Blue Ocean console.
 
+   ![](img/click%20admin%20to%20exit.png)
+
+
 
     - Inside your Ansible project, create a `deploy` directory.
+
+    ![](img/jenkinsfile.png)
+
     - Add a `Jenkinsfile` and paste the following code:
 
       ```groovy
@@ -392,7 +444,21 @@ Previously, Ansible commands were executed manually from the CLI. With Jenkins, 
 
 4. **Configure the Pipeline in Jenkins:**
     - Go to the pipeline project in Jenkins.
+
+    ![](img/click%20here.png)
+
     - Navigate to the Build Configuration section and specify the path to the `Jenkinsfile` as `deploy/Jenkinsfile`.
+      - Click configure
+
+      ![](img/click%20configure.png)
+
+      - Then add "deploy/"before jenkinsfile
+      
+      ![](img/build%20configuration.png)
+
+
+
+
 5. **Trigger the Build:**
     - Click "Build Now" to execute the pipeline.
     - View the build’s console output to confirm the configuration.
