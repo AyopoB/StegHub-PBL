@@ -456,27 +456,42 @@ Previously, Ansible commands were executed manually from the CLI. With Jenkins, 
       
       ![](img/build%20configuration.png)
 
+      - Push changes to github if you are adding the Jenkinsfile locally on the instance.
+
 
 
 
 5. **Trigger the Build:**
+    - Click `main` 
+
+    ![](img/click%20main.png)
+
     - Click "Build Now" to execute the pipeline.
+
+    ![](img/build%20now.png)
+
     - View the build’s console output to confirm the configuration.
     
     This will trigger a build and you will be able to see the effect of our basic Jenkinsfile configuration by going through the console output of the build.
     
     To really appreciate and feel the difference of Cloud Blue UI, it is recommended to try triggering the build again from Blue Ocean interface.
+      
+      ![](img/console%20output.png)
 
     1. Click on Blue Ocean 
     2. Select your project
     3. Click on the play button against the branch
     
+    ![](img/BO1.png)
 
 ### Enhancing the Pipeline with Multiple Stages
 
 #### Adding a Test Stage
 
 1. Create a new branch, `feature/jenkinspipeline-stages`.
+
+   ![](img/git%20checkout%20to%20new%20branch.png)
+
 2. Update the `Jenkinsfile` to include a `Test` stage:
 
     ```groovy
@@ -505,14 +520,25 @@ Previously, Ansible commands were executed manually from the CLI. With Jenkins, 
 4. In Jenkins, 
 - click on the "Administration" button ,
 - click on "scan repository now" to detect the new branch, 
+
+   ![](img/click%20scan%20repo%20now.png)
 5. Refresh the page and both the `main` and `feature` branches  will start building automatically  .
+
+   ![](img/blue%20ocean%201.png)
+
 6. View the results in the Blue Ocean interface.
+
+   ![](img/blue%20ocean%202.png)
+   
 
 
 #### Adding Additional Stages
 
 1. Merge the `feature/jenkinspipeline-stages` branch into `main`.
 2. Create a new branch and add the following stages:
+
+      ![](img/new%20branch.png)
+
     - **Package:** Simulate packaging tasks.
     - **Deploy:** Simulate deployment tasks.
     - **Clean Up:** Simulate cleanup tasks.
@@ -563,14 +589,21 @@ Previously, Ansible commands were executed manually from the CLI. With Jenkins, 
     ```
 
 3. Push changes to GitHub and verify the pipeline stages in Blue Ocean.
+
+   ![](img/build%20stages.png)
+
 4. Merge the changes into the `main` branch.
 
 ### Final Task
 
 1. **Create a Pull Request:** Merge the latest code into the `main` branch.
 2. **Pull Changes:** Switch to the `main` branch locally and pull the latest changes.
+
+   ![](img/main%20locally.png)
+
 3. **Verify Pipeline:** Ensure the pipeline reflects all stages correctly in Blue Ocean.
 
+      ![](img/blue%20ocean%20main.png)
 
 ## Running Ansible Playbook from Jenkins
 
@@ -592,126 +625,313 @@ This part details the steps to configure and execute an Ansible playbook through
 
    >If you dont have it installed.
 
+   ![](img/ansible%20version.png)
+
+
 ---
 
 #### Step 2: Install the Ansible Plugin in Jenkins
 1. Navigate to **Jenkins Dashboard** > **Manage Jenkins** > **Manage Plugins**.
 2. Search for the “Ansible” plugin in the **Available** tab and install it.
-3. Restart Jenkins if prompted.
 
+   ![](img/ansible%20plugin%201.png)
+
+3. Restart Jenkins if prompted.
+4. Click on Dashboard > Manage Jenkins > Tool > Add Ansible. Add a name and the path ansible is installed on the jenkins server
+```bash
+ which ansible
+ ```
+ ![](img/ansible%20path.png)
+
+   Then enter the above path in Jenkins GUI:
+   
+   ![](img/ansible%20pathhh.png)
 ---
 
 ## Step 3: Create a New Jenkinsfile
 To configure Jenkins to run your Ansible playbook, create a new `Jenkinsfile` and follow the steps below:
+```groovy
+pipeline {
+    agent any
 
-1. **Set Up a Clean Workspace:** Ensure the pipeline starts by cleaning the workspace to avoid issues caused by leftover files from previous builds.
-   ```groovy
-   pipeline {
-       agent any
-       stages {
-           stage('Cleanup') {
-               steps {
-                   cleanWs()
-               }
-           }
-       }
-   }
-   ```
+    environment {
+        ANSIBLE_CONFIG = "${WORKSPACE}/deploy/ansible.cfg"
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
+    }
 
-2. **Check Out Code:** Add a stage to check out the code from the Git repository. Ensure the repository uses the `main` branch, as GitHub has deprecated the default `master` branch.
-   ```groovy
-   stage('Checkout') {
-       steps {
-           git branch: 'main', url: 'https://github.com/your-repo/your-project.git'
-       }
-   }
-   ```
+    stages {
+        stage("Initial cleanup") {
+            steps {
+                dir("${WORKSPACE}") {
+                    deleteDir()
+                }
+            }
+        }
 
-3. **Export Ansible Configuration:**
-   - Place `.ansible.cfg` in the `deploy` directory alongside `Jenkinsfile`.
-   - Use the Pipeline Syntax tool to set an environment variable for the `ANSIBLE_CONFIG` file.
-   ```groovy
-   environment {
-       ANSIBLE_CONFIG = "deploy/.ansible.cfg"
-   }
-   ```
+        stage('Checkout SCM') {
+            steps {
+                git branch: 'main', url: 'https://github.com/AyopoB/ansible-config-mgt.git'
+            }
+        }
 
-4. **Update Roles Path Dynamically:**
-   Use `sed` to dynamically update the `roles_path` in `.ansible.cfg` during execution:
-   ```bash
-   sed -i "s|roles_path.*|roles_path=/path/to/roles|" deploy/.ansible.cfg
-   ```
+        stage('Prepare Ansible For Execution') {
+            steps {
+                sh """
+                echo ${WORKSPACE}
+                if grep -q '^roles_path=' ${WORKSPACE}/deploy/ansible.cfg; then
+                    sed -i "s|^roles_path=.*|roles_path=${WORKSPACE}/roles|" ${WORKSPACE}/deploy/ansible.cfg
+                else
+                    echo "roles_path=${WORKSPACE}/roles" >> ${WORKSPACE}/deploy/ansible.cfg
+                fi
+                """
+            }
+        }
 
-5. **Run the Ansible Playbook:** Include a stage to execute the playbook:
-   ```groovy
-   stage('Ansible Execution') {
-       steps {
-           sh 'ansible-playbook -i inventory/dev playbook.yml'
-       }
-   }
-   ```
+
+        stage('Test SSH Connections') {
+            steps {
+                script {
+                    def hosts = [
+                        [group: 'uat-webservers', ip: '172.31.26.143', user: 'ec2-user'],
+                        [group: 'uat-webservers', ip: '172.31.18.71', user: 'ec2-user'],
+                        [group: 'lb', ip: '172.31.18.31', user: 'ubuntu'],
+                        [group: 'db', ip: '172.31.30.166', user: 'ubuntu']
+                    ]
+                    for (host in hosts) {
+                        sshagent(['ssh-ansible']) {
+                            sh "ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/key.pem ${host.user}@${host.ip} exit"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Run Ansible playbook') {
+            steps {
+                sshagent(['ssh-ansible']) {
+                    ansiblePlaybook(
+                        become: true,
+                        credentialsId: 'ssh-ansible',
+                        disableHostKeyChecking: true,
+                        installation: 'ansible',
+                        inventory: "${WORKSPACE}/inventory/dev.yml",
+                        playbook: "${WORKSPACE}/playbooks/site.yml"
+                    )
+                }
+            }
+        }
+
+        stage('Clean Workspace after build') {
+            steps {
+                cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, deleteDirs: true)
+            }
+        }
+    }
+}
+
+```
+
+
+![](img/build%20success1.png)
+
+**line-by-line explanation** of the Jenkins Pipeline script:
 
 ---
 
-## Step 4: Handle Common Issues
-
-### Git Issues
-- Ensure Jenkins always fetches the latest code from GitHub:
-   ```groovy
-   stage('Cleanup Workspace') {
-       steps {
-           cleanWs()
-           git branch: 'main', url: 'https://github.com/your-repo/your-project.git'
-       }
-   }
-   ```
-- Verify the branch in Jenkins workspace:
-   ```bash
-   git branch
-   ```
-
-### Ansible Configuration
-- Ensure `roles_path` is updated dynamically to reflect the correct branch location.
-- Validate the `.ansible.cfg` environment variable using:
-   ```bash
-   echo $ANSIBLE_CONFIG
-   ```
+### **Pipeline Declaration**
+```groovy
+pipeline {
+    agent any
+```
+- **`pipeline {}`**: Defines the start of the pipeline script.
+- **`agent any`**: Specifies that the pipeline can run on any available Jenkins agent (node).
 
 ---
 
-## Step 5: Parameterizing Jenkinsfile for Ansible Deployment
+### **Environment Variables**
+```groovy
+environment {
+    ANSIBLE_CONFIG = "${WORKSPACE}/deploy/ansible.cfg"
+    ANSIBLE_HOST_KEY_CHECKING = 'False'
+}
+```
+- **`environment {}`**: Sets environment variables for the entire pipeline.
+- **`AN`SIBLE_CONFIG**: Points to the Ansible configuration file (`ansible.cfg`) located in the `deploy` directory of the current workspace.
+- **`ANSIBLE_HOST_KEY_CHECKING`**: Disables strict host key checking, preventing SSH from prompting for key confirmation.
 
-### Add Parameters to Jenkinsfile
-1. Introduce parameters for environment and tags:
-   ```groovy
-   pipeline {
-       agent any
-       parameters {
-           string(name: 'inventory', defaultValue: 'dev', description: 'Environment inventory file')
-           string(name: 'tags', defaultValue: '', description: 'Ansible tags to limit execution')
-       }
-       stages {
-           stage('Ansible Execution') {
-               steps {
-                   sh 'ansible-playbook -i inventory/${inventory} playbook.yml --tags ${tags}'
-               }
-           }
-       }
-   }
-   ```
+---
 
-2. Default values ensure the `dev` environment is used if no other value is specified.
+### **Stages Declaration**
+```groovy
+stages {
+```
+- **`stages {}`**: A block that contains all the stages of the pipeline.
+
+---
+
+### **Stage: Initial Cleanup**
+```groovy
+stage("Initial cleanup") {
+    steps {
+        dir("${WORKSPACE}") {
+            deleteDir()
+        }
+    }
+}
+```
+- **`stage("Initial cleanup")`**: Defines a stage for cleaning the workspace.
+- **`dir("${WORKSPACE}")`**: Points to the current workspace directory.
+- **`deleteDir()`**: Deletes all files and folders within the workspace to ensure a clean slate for the build.
+
+---
+
+### **Stage: Checkout SCM**
+```groovy
+stage('Checkout SCM') {
+    steps {
+        git branch: 'main', url: 'https://github.com/AyopoB/ansible-config-mgt.git'
+    }
+}
+```
+- **`stage('Checkout SCM')`**: Pulls the source code from the Git repository.
+- **`git branch: 'main', url: ...`**: Specifies the branch (`main`) and the GitHub repository URL to clone into the workspace.
+
+---
+
+### **Stage: Prepare Ansible For Execution**
+```groovy
+stage('Prepare Ansible For Execution') {
+    steps {
+        sh """
+        echo ${WORKSPACE}
+        if grep -q '^roles_path=' ${WORKSPACE}/deploy/ansible.cfg; then
+            sed -i "s|^roles_path=.*|roles_path=${WORKSPACE}/roles|" ${WORKSPACE}/deploy/ansible.cfg
+        else
+            echo "roles_path=${WORKSPACE}/roles" >> ${WORKSPACE}/deploy/ansible.cfg
+        fi
+        """
+    }
+}
+```
+- **`stage('Prepare Ansible For Execution')`**: Prepares Ansible for the pipeline run by updating the `roles_path` in the `ansible.cfg` file.
+- **`sh """ ... """`**: Executes the enclosed shell script:
+  - Prints the `WORKSPACE` path.
+  - **`grep -q '^roles_path=' ...`**: Checks if `roles_path` is already defined in `ansible.cfg`.
+  - **`sed -i`**: Updates `roles_path` if it exists.
+  - **`echo ... >>`**: Appends `roles_path` if it doesn't exist.
+
+---
+
+### **Stage: Test SSH Connections**
+```groovy
+stage('Test SSH Connections') {
+    steps {
+        script {
+            def hosts = [
+                [group: 'uat-webservers', ip: '172.31.26.143', user: 'ec2-user'],
+                [group: 'uat-webservers', ip: '172.31.18.71', user: 'ec2-user'],
+                [group: 'lb', ip: '172.31.18.31', user: 'ubuntu'],
+                [group: 'db', ip: '172.31.30.166', user: 'ubuntu']
+            ]
+            for (host in hosts) {
+                sshagent(['ssh-ansible']) {
+                    sh "ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/key.pem ${host.user}@${host.ip} exit"
+                }
+            }
+        }
+    }
+}
+```
+- **`stage('Test SSH Connections')`**: Verifies that SSH connections to all target servers work properly.
+- **`script {}`**: Allows executing custom Groovy scripts.
+- **`def hosts`**: Defines a list of servers, including group names, IP addresses, and SSH usernames.
+- **`for (host in hosts)`**: Iterates over the list of servers.
+- **`sshagent(['ssh-ansible'])`**: Uses the `ssh-ansible` credentials to authenticate via SSH.
+- **`sh "ssh -o StrictHostKeyChecking=no ..."`**: Executes an SSH command to test connectivity to each server.
+
+---
+
+### **Stage: Run Ansible Playbook**
+```groovy
+stage('Run Ansible playbook') {
+    steps {
+        sshagent(['ssh-ansible']) {
+            ansiblePlaybook(
+                become: true,
+                credentialsId: 'ssh-ansible',
+                disableHostKeyChecking: true,
+                installation: 'ansible',
+                inventory: "${WORKSPACE}/inventory/dev.yml",
+                playbook: "${WORKSPACE}/playbooks/site.yml"
+            )
+        }
+    }
+}
+```
+- **`stage('Run Ansible playbook')`**: Runs the Ansible playbook.
+- **`sshagent(['ssh-ansible'])`**: Uses the `ssh-ansible` credentials for Ansible.
+- **`ansiblePlaybook`**: Executes the Ansible playbook with the following options:
+  - **`become: true`**: Enables privilege escalation (e.g., `sudo`).
+  - **`credentialsId: 'ssh-ansible'`**: Uses the specified credentials for SSH.
+  - **`disableHostKeyChecking: true`**: Skips SSH host key verification.
+  - **`installation: 'ansible'`**: Specifies the Ansible installation to use.
+  - **`inventory`**: Points to the inventory file (`dev.yml`).
+  - **`playbook`**: Specifies the playbook file (`site.yml`) to execute.
+
+---
+
+### **Stage: Clean Workspace After Build**
+```groovy
+stage('Clean Workspace after build') {
+    steps {
+        cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, deleteDirs: true)
+    }
+}
+```
+- **`stage('Clean Workspace after build')`**: Cleans up the workspace after the pipeline execution.
+- **`cleanWs(...)`**: Removes all files and directories in the workspace, with options to clean in specific scenarios:
+  - **`cleanWhenAborted`**: Clean if the pipeline was aborted.
+  - **`cleanWhenFailure`**: Clean if the pipeline failed.
+  - **`cleanWhenNotBuilt`**: Clean if the pipeline was skipped.
+  - **`cleanWhenUnstable`**: Clean if the pipeline completed but with warnings.
+
+---
+
+### **Summary**
+- **Initial cleanup**: Ensures a fresh workspace.
+- **Checkout SCM**: Pulls the latest code.
+- **Prepare Ansible**: Configures Ansible for the pipeline.
+- **Test SSH Connections**: Verifies connectivity to all servers.
+- **Run Ansible playbook**: Deploys infrastructure or applications.
+Ansible playbook. :
+            - Uses the sshagent step to ensure the SSH key is available for Ansible.
+            - Runs the ansiblePlaybook step with the specified parameters .
+            ####  To ensure jenkins properly connects to all servers, you will need to install another plugin known as `ssh agent` , after that, go to `manage jenkins` > `credentials` > `global` > `add credentials` , usee `ssh username and password` , fill out the neccesary details and save.
+- **Clean Workspace**: Cleans up files post-build.
+
+ - Now back to your `inventory/dev.yml` , update the inventory with thier respective servers private ip address
+ - Ensure that the Git plugin is configured correctly in Jenkins:
+
+   - Go to Manage Jenkins → Global Tool Configuration.
+Ensure the Git executable is set up properly (e.g., /usr/bin/git).
+
+- Specify credentials for cloning:
+
+   - Create GitHub credentials in Jenkins under Manage Jenkins > Manage Credentials.
+
+
+---
 
 ### Update SIT Inventory
 Define servers in the `sit` inventory file:
-```ini
+```yaml
 [tooling]
 SIT-Tooling-Web-Server-Private-IP-Address
 
 [todo]
 SIT-Todo-Web-Server-Private-IP-Address
 
-[nginx]
+[lb]
 SIT-Nginx-Private-IP-Address
 
 [db:vars]
@@ -722,6 +942,25 @@ ansible_python_interpreter=/usr/bin/python
 SIT-DB-Server-Private-IP-Address
 ```
 
+### Add Parameters to Jenkinsfile
+1. Introduce parameters for environment and tags:
+   ```groovy
+   pipeline {
+       agent any
+       parameters {
+          string(name: 'inventory', defaultValue: 'dev',  description: 'This is the inventory file for the environment to deploy configuration')
+          string(name: 'tags', defaultValue: '', description: 'Ansible tags to limit execution')
+        }
+   }
+   ```
+   ![](img/update%20parameters.png)
+2. Update the inventory path with this : `${inventory}`
+
+3. Default values ensure the `dev` environment is used if no other value is specified.
+
+4. Update the jenkins file to included the ansible tags before it runs playbook:
+
+![](img/update%20tags.png)
 ---
 
 ## Step 6: Test and Deploy to Other Environments
@@ -729,7 +968,7 @@ SIT-DB-Server-Private-IP-Address
 ### Test Ansible Locally
 Run the playbook with parameters to test the changes locally:
 ```bash
-ansible-playbook -i inventory/dev playbook.yml --tags "webserver"
+ansible-playbook -i inventory/dev.yml playbook.yml --tags "webserver"
 ```
 
 ### Execute Pipeline in Jenkins
@@ -738,7 +977,12 @@ ansible-playbook -i inventory/dev playbook.yml --tags "webserver"
 3. Input values for the environment (e.g., `sit`) and tags (e.g., `webserver`).
 4. Click **Build Now** to execute the deployment.
 
+![](img/build%20with%20pppa.png)
+
+
+![](img/para%20run.png)
 ---
+
 
 ## Step 7: Debugging Tips
 
