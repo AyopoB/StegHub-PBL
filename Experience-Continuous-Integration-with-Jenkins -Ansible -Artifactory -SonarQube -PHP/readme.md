@@ -1019,14 +1019,40 @@ JFrog Artifactory is not included in Ubuntu's default repositories. Follow these
    ```
 
 2. **Add the JFrog GPG Key:**
-   ```bash
-   wget -qO - https://api.bintray.com/orgs/jfrog/keys/gpg/public.key | apt-key add -
-   ```
+     
+
+    1. **Download the GPG Key**:
+    ```bash
+    wget -qO jfrog.gpg https://api.bintray.com/orgs/jfrog/keys/gpg/public.key
+    ```
+
+    2. **Move the Key to `/etc/apt/trusted.gpg.d/`**:
+    ```bash
+    sudo mv jfrog.gpg /etc/apt/trusted.gpg.d/
+    ```
+
+    3. **Verify**:
+    Ensure the key is in the correct location:
+    ```bash
+    ls /etc/apt/trusted.gpg.d/jfrog.gpg
+    ```
+
+
 
 3. **Add the JFrog Artifactory repository:**
    ```bash
-   echo "deb https://jfrog.bintray.com/artifactory-debs bionic main" | tee /etc/apt/sources.list.d/jfrog.list
+   echo "deb https://jfrog.bintray.com/artifactory-debs bionic main" | sudo tee /etc/apt/sources.list.d/jfrog.list
    ```
+   - Verify the File, After running the command, verify that the file was created and contains the repository entry:
+        ```bash
+        cat /etc/apt/sources.list.d/jfrog.list
+        ```
+
+
+
+
+
+
 
 #### **Step 2: Install JFrog Artifactory OSS**
 1. **Update the system repositories:**
