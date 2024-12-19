@@ -1006,95 +1006,17 @@ We previously set up a **tooling website** deployment through Ansible. Now, we a
 
 The deployment goal is to use **Artifactory** for storing and deploying code artifacts, bypassing direct Git integration.
 
-### Install Artifactory manually
-
-### **Installing JFrog Artifactory on Ubuntu **
-
-#### **Step 1: Add JFrog Artifactory Repository**
-JFrog Artifactory is not included in Ubuntu's default repositories. Follow these steps to add the necessary repository:
-
-1. **Install the `gnupg2` package:**
-   ```bash
-   apt-get install gnupg2 -y
-   ```
-
-2. **Add the JFrog GPG Key:**
-     
-
-    1. **Download the GPG Key**:
-    ```bash
-    wget -qO jfrog.gpg https://api.bintray.com/orgs/jfrog/keys/gpg/public.key
-    ```
-
-    2. **Move the Key to `/etc/apt/trusted.gpg.d/`**:
-    ```bash
-    sudo mv jfrog.gpg /etc/apt/trusted.gpg.d/
-    ```
-
-    3. **Verify**:
-    Ensure the key is in the correct location:
-    ```bash
-    ls /etc/apt/trusted.gpg.d/jfrog.gpg
-    ```
+### Install Artifactory 
+Install artifactory by following this guide [Install artifactory on Ubuntu 24.04 LTS](https://www.fosstechnix.com/install-jfrog-artifactory-on-ubuntu-24-04-lts/)
 
 
+![](img/jfrog%20home%201.png)
 
-3. **Add the JFrog Artifactory repository:**
-   ```bash
-   echo "deb https://jfrog.bintray.com/artifactory-debs bionic main" | sudo tee /etc/apt/sources.list.d/jfrog.list
-   ```
-   - Verify the File, After running the command, verify that the file was created and contains the repository entry:
-        ```bash
-        cat /etc/apt/sources.list.d/jfrog.list
-        ```
+> `cd /opt/artifactory-oss-6.9.6`
 
+>`sudo ./bin/artifactory.sh start`
 
-
-
-
-
-
-#### **Step 2: Install JFrog Artifactory OSS**
-1. **Update the system repositories:**
-   ```bash
-   apt-get update -y
-   ```
-
-2. **Install JFrog Artifactory OSS:**
-   ```bash
-   apt-get install jfrog-artifactory-oss -y
-   ```
-
-   After installation, you should see a confirmation message:
-   ```
-   ************ SUCCESS ****************
-   The Installation of Artifactory has completed successfully.
-   ```
-
-#### **Step 3: Start and Enable Artifactory Service**
-1. **Start the Artifactory service:**
-   ```bash
-   systemctl start artifactory
-   ```
-
-2. **Enable Artifactory to start on reboot:**
-   ```bash
-   systemctl enable artifactory
-   ```
-
-3. **Check the status of Artifactory:**
-   ```bash
-   systemctl status artifactory
-   ```
-
-#### **Installation Notes**
-- **Installation Directory:** `/opt/jfrog/artifactory`
-- **Logs Directory:** `/opt/jfrog/artifactory/var/log`
-- **System Configuration:** `/opt/jfrog/artifactory/var/etc`
-
-For database configuration (MySQL, PostgreSQL, etc.), visit: [Configuring the Database](https://service.jfrog.org/installer/Configuring+the+Database).
-
-
+>http://<your-server-ip>:8081
 
 ## Phase 1: Prepare Jenkins
 
@@ -1103,6 +1025,11 @@ Fork the following repository into your GitHub account:
 
 > [https://github.com/StegTechHub/php-todo.git](https://github.com/StegTechHub/php-todo.git)
 
+![](img/fork%201.png)
+
+![](img/fork%202.png)
+
+
 ### 2. Install PHP and Dependencies
 On your Jenkins server, install PHP, its dependencies, and the Composer tool. You can do this manually initially and update Ansible later:
 
@@ -1110,6 +1037,8 @@ On your Jenkins server, install PHP, its dependencies, and the Composer tool. Yo
 sudo apt update
 sudo apt install -y zip libapache2-mod-php phploc php-{xml,bcmath,bz2,intl,gd,mbstring,mysql,zip}
 ```
+
+![](img/install%20php%20and%20co.png)
 
 ### 3. Install Required Jenkins Plugins
 - **Plot Plugin**: For displaying test reports and code coverage.
@@ -1746,13 +1675,6 @@ Deploy the application to all environments, ensuring code passes quality gates.
    - [Ansible Wireshark Role (RedHat)](https://github.com/wtanaka/ansible-role-wireshark)
 
 ---
-
-
-
-
-
-
-
 
 
 
