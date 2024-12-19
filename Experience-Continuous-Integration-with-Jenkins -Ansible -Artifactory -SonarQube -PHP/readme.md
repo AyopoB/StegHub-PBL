@@ -1042,12 +1042,19 @@ sudo apt install -y zip libapache2-mod-php phploc php-{xml,bcmath,bz2,intl,gd,mb
 
 ### 3. Install Required Jenkins Plugins
 - **Plot Plugin**: For displaying test reports and code coverage.
+
+![](img/plot%20pluging.png)
+
 - **Artifactory Plugin**: For uploading code artifacts to Artifactory.
 
+![](img/artifactory%20plugin.png)
+
 ### 4. Configure Artifactory in Jenkins
-- Go to the Jenkins UI.
+- Go to the Jenkins UI,  manage Jenkins> system> Jfrog Platform Instances.
 - Add Artifactory server details (ID, URL, and credentials).
 - Test the connection to ensure it’s working.
+
+![](img/set%20up%20jfrog%20jenkins.png)
 
 ## Phase 2: Integrate Artifactory Repository with Jenkins
 
