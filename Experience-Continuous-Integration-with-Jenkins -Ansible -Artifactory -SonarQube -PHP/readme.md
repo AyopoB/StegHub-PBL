@@ -1056,26 +1056,159 @@ sudo apt install -y zip libapache2-mod-php phploc php-{xml,bcmath,bz2,intl,gd,mb
 
 ![](img/set%20up%20jfrog%20jenkins.png)
 
+Create a local repository and call it `todo-dev-local`, set the repository type to `generic`
+
+![](img/local%20repo%201.png)
+
 ## Phase 2: Integrate Artifactory Repository with Jenkins
+
 
 ### 1. Create a Dummy `Jenkinsfile`
 Add a basic `Jenkinsfile` to the repository.
+-  Install mysql client
+
+```bash
+sudo apt update
+sudo apt install mysql-client -y
+```
 
 ### 2. Set Up a Multibranch Pipeline
 Use the Blue Ocean interface to create a multibranch Jenkins pipeline.
 
-### 3. Configure the Database
-On the database server:
+![](img/update%20new%20pipeline.png)
 
-```sql
-CREATE DATABASE homestead;
-CREATE USER 'homestead'@'%' IDENTIFIED BY 'sePret^i';
-GRANT ALL PRIVILEGES ON *.* TO 'homestead'@'%';
+### 3. Configure the Database
+Update the env_vars/dev.yml file to include the todo app database named `homestead`.:
+
+```yml
+# MySQL configuration for the development environment
+mysql_root_username: "root"
+mysql_root_password: "Password.123"
+
+# Define databases and users to be created for the dev environment
+mysql_databases:
+  - name: homestead
+    encoding: utf8
+    collation: utf8_general_ci
+
+mysql_users:
+  - name: homestead
+    host: "%"
+    password: Password.123
+    priv: "*.*:ALL,GRANT"
 ```
 
+
+
 Update the `.env.sample` file with the database details.
+![](img/env%20update%20details.png)
+
+- Save the actual details as environment variables in the Jenkins UI Navigate to Manage jenkins > System > Global properties > Environment variables
+
+
+![](img/add%20environment%20variables.png)
+
+Run the playbook
+
+```bash
+cd ansible-config-mgt
+ansible-playbook -i inventory/dev.yml playbooks/site.yml
+```
+- Navigate to the db server and verify the creation of the databases and users.
+```bash
+sudo mysql -u root -p #(enter password 'Passw0rd123#' when prompted)
+
+# Verify databases
+SHOW DATABASES;
+
+#Verify users
+SELECT User, Host FROM mysql.user;
+
+#Verify privileges
+SHOW GRANTS FOR 'username'@'hostname'; #(Replace 'username' and 'hostname' with the actual username and hostname you want to check.)
+```
+
+![](img/mysql%20db%20deta.png)
 
 ### 4. Update the `Jenkinsfile`
+
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Initial cleanup') {
+      steps {
+        dir(path: "${WORKSPACE}") {
+          deleteDir()
+        }
+
+      }
+    }
+
+    stage('Checkout SCM') {
+      steps {
+        git(branch: 'main', url: 'https://github.com/AyopoB/php-todo.git')
+      }
+    }
+
+    stage('Prepare Dependencies') {
+      steps {
+        sh 'mkdir -p bootstrap/cache'
+        sh 'chmod -R 775 bootstrap/cache'
+        sh 'mv .env.sample .env'
+        sh 'composer install'
+        sh 'php artisan migrate'
+        sh 'php artisan db:seed'
+        sh 'php artisan key:generate'
+      }
+    }
+
+  }
+}
+```
+
+If the above fails it might be due to composer compatibility issues with your php version, for that try the step below to fix the potential issues:
+- **STEP** :
+1. Downgrade your PHP version to 7.4 if possible:
+
+- Add the Required Repository Ubuntu does not include older PHP versions in its default repositories. Use the ondrej/php PPA (a popular source for PHP packages):
+```bash
+sudo apt update
+sudo apt install -y software-properties-common
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt update
+```
+- Install PHP 7.4 Install PHP 7.4 and any necessary modules:
+```bash
+sudo apt install -y php7.4 php7.4-cli php7.4-fpm php7.4-mbstring php7.4-xml php7.4-curl php7.4-mysql
+```
+
+- Update Alternatives Register PHP 7.4 with the update-alternatives system:
+```bash
+sudo update-alternatives --install /usr/bin/php php /usr/bin/php7.4 74
+sudo update-alternatives --install /usr/bin/php php /usr/bin/php8.3 83
+```
+- Switch to PHP 7.4 Use update-alternatives to select PHP 7.4:
+```bash
+sudo update-alternatives --config php
+```
+- Verify the PHP Version Confirm the active PHP version:
+```bash
+php -v
+```
+
+
+### Notice the Prepare Dependencies section**: 
+
+- Sets up the `.env` file, installs libraries with Composer, and initializes the database using `php artisan` commands.
+- After running `php artisan migrate`, check the database tables with `SHOW TABLES` to verify creation.
+
+> - The required file by PHP is .env so we are renaming .env.sample to .env
+>- Composer is used by PHP to install all the dependent libraries used by the application
+>- php artisan uses the .env file to setup the required database objects - (After successful run of this step, login to the database, run show tables and you will see the tables being created for you)
+
+
+- add unit test stage 
 
 ```groovy
 pipeline {
@@ -1090,12 +1223,20 @@ pipeline {
         }
         stage('Checkout SCM') {
             steps {
-                git branch: 'main', url: 'https://github.com/StegTechHub/php-todo.git'
+                git branch: 'main', url: 'https://github.com/AyopoB/php-todo.git'
             }
         }
         stage('Prepare Dependencies') {
             steps {
                 sh 'mv .env.sample .env'
+                sh '''
+                    mkdir -p bootstrap/cache
+                    mkdir -p storage/framework/sessions
+                    mkdir -p storage/framework/views
+                    mkdir -p storage/framework/cache                        
+                    chown -R jenkins:jenkins bootstrap storage 
+                    chmod -R 775 bootstrap storage 
+                '''
                 sh 'composer install'
                 sh 'php artisan migrate'
                 sh 'php artisan db:seed'
@@ -1111,14 +1252,6 @@ pipeline {
 }
 ```
 
-### Notice the Prepare Dependencies section**: 
-
-- Sets up the `.env` file, installs libraries with Composer, and initializes the database using `php artisan` commands.
-- After running `php artisan migrate`, check the database tables with `SHOW TABLES` to verify creation.
-
-> - The required file by PHP is .env so we are renaming .env.sample to .env
->- Composer is used by PHP to install all the dependent libraries used by the application
->- php artisan uses the .env file to setup the required database objects - (After successful run of this step, login to the database, run show tables and you will see the tables being created for you)
 
 ## Phase 3: Code Quality Analysis
 
