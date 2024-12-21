@@ -1259,7 +1259,7 @@ pipeline {
 ## Phase 3: Code Quality Analysis
 
 1. Set Up `phploc`
-`phploc` is a tool for code quality analysis in PHP. Install it and configure Jenkins to plot the data.
+`phploc` is a tool for code quality analysis in PHP. Install it and configure Jenkins to plot the data. PHPLOC (PHP Lines Of Code) is a tool for measuring the size and complexity of PHP projects. The output of the data will be saved in the `/build/logs/phploc.csv` file.
 
  2. Add Code Analysis to the `Jenkinsfile`
 
@@ -1296,6 +1296,12 @@ stage('Plot Code Coverage Report') {
       }
     }
 ```
+
+
+![](img/plot%20coverage%201.png)
+
+![](img/plot%20coverage%202.png)
+
 4. Bundle the application code for into an artifact (archived package) upload to Artifactory
 
 ```groovy
