@@ -1297,6 +1297,7 @@ stage('Plot Code Coverage Report') {
     }
 ```
 
+You should now see a Plot menu item on the left menu. Click on it to see the charts. (The analytics may not mean much to you as it is meant to be read by developers. So, you need not worry much about it – this is just to give you an idea of the real-world implementation).
 
 ![](img/plot%20coverage%201.png)
 
