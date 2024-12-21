@@ -1207,6 +1207,7 @@ php -v
 >- Composer is used by PHP to install all the dependent libraries used by the application
 >- php artisan uses the .env file to setup the required database objects - (After successful run of this step, login to the database, run show tables and you will see the tables being created for you)
 
+![](img/php%20todo%20build%20success.png)
 
 - add unit test stage 
 
@@ -1252,6 +1253,8 @@ pipeline {
 }
 ```
 
+![](img/unit%20test%20build%20success.png)
+
 
 ## Phase 3: Code Quality Analysis
 
@@ -1267,6 +1270,8 @@ stage('Code Analysis') {
     }
 }
 ```
+
+![](img/php%20loc%20code%20analysis.png)
 
 3. Configure the Plot Plugin
 Use the Plot plugin to graphically display `phploc` data in Jenkins. Add the following stage to the `Jenkinsfile`:
