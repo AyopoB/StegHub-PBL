@@ -1098,7 +1098,7 @@ mysql_users:
     priv: "*.*:ALL,GRANT"
 ```
 
-
+>Also update your security group for port 3306 to allow inbound traffic from your jenkins server
 
 Update the `.env.sample` file with the database details.
 ![](img/env%20update%20details.png)
@@ -1312,6 +1312,9 @@ stage ('Package Artifact') {
      }
     }
 ```
+
+![](img/zip%20package%20build.png)
+
 5. Publish the resulted artifact into Artifactory
 
 ```groovy
@@ -1323,7 +1326,7 @@ stage ('Upload Artifact to Artifactory') {
                     "files": [
                       {
                        "pattern": "php-todo.zip",
-                       "target": "<name-of-artifact-repository>/php-todo",
+                       "target": "todo-dev-local/php-todo",
                        "props": "type=zip;status=ready"
 
                        }
@@ -1337,16 +1340,30 @@ stage ('Upload Artifact to Artifactory') {
         }
 ```
 
+![](img/upload%20artifact%20to%20artifactory.png)
+
+Confirm upload on Artifactory:
+
+![](img/confirm%20artifact%20on%20artifactory.png)
+
 6. Deploy the application to the dev environment by launching Ansible pipeline
 
 ```groovy
 stage ('Deploy to Dev Environment') {
     steps {
-    build job: 'ansible-project/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev']], propagate: false, wait: true
+    build job: 'ansible-config-mgt/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev']], propagate: false, wait: true
     }
   }
 ```
 > The build job used in this step tells Jenkins to start another job. In this case it is the ansible-project job, and we are targeting the main branch. Hence, we have ansible-project/main. Since the Ansible project requires parameters to be passed in, we have included this by specifying the parameters section. The name of the parameter is env and its value is dev. Meaning, deploy to the Development environment.
+
+
+we need to get some things in place first.
+- first create an rhel ec2 instance for the development todo webserver named DEV-todo-webapp.
+
+- Included it's private IP in the dev environment inventory file.
+
+![](img/deploy%20to%20dev%20success.png)
 
 >But how are we certain that the code being deployed has the quality that meets corporate and customer requirements? Even though we have implemented Unit Tests and Code Coverage Analysis with phpunit and phploc, we still need to implement Quality Gate to ensure that ONLY code with the required code coverage, and other quality standards make it through to the environments.
 
