@@ -1692,6 +1692,10 @@ To prevent running SonarQube as the root user:
    WantedBy=multi-user.target
    ```
 4. Save and close the file.
+
+![](img/systemd%20servicefile.png)
+
+
 5. Start the SonarQube service:
    ```bash
    sudo systemctl start sonar
@@ -1705,19 +1709,29 @@ To prevent running SonarQube as the root user:
    sudo systemctl status sonar
    ```
 
+   ![](img/status%20sonar.png)
+
+
 ---
 
 ## Step 5: Access SonarQube
 
 1. Open your browser and navigate to the SonarQube instance:
+
+>firstly add an inbound rule for port 9000 in your AWS security group
+
    ```
    http://<server_IP>:9000
    ```
    Replace `<server_IP>` with your server's IP address.
 
+   ![](img/sonar%20before%20login.png)
+
 2. Login with the default credentials:
    - Username: `admin`
    - Password: `admin`
+
+![](img/sonar%20homepage%20after%20login.png)
 
 3. Change the default password for better security.
 
@@ -1743,17 +1757,33 @@ To prevent running SonarQube as the root user:
    - Input the server URL (e.g., `http://<SonarQube-Server-IP>:9000`).
    - Add authentication token generated in the next step.
 
+   ![](img/sonar%20jenkins%20config1.png)
+
 ### 3. Generate Authentication Token in SonarQube
 
 1. Log into SonarQube and navigate to **User > My Account > Security > Generate Tokens**.
 2. Create a token and copy it.
-3. Paste the token in the Jenkins configuration under SonarQube server authentication.
+
+![](img/sonar%20token.png)
+
+3. Paste the token in the Jenkins configuration under SonarQube server authenticatio
+
+![](img/add%20jenkins%20credentials.png)
+
+![](img/sonar%20token.png)
+
 
 ### 4. Configure Webhook for Quality Gate
 
 1. In SonarQube, navigate to **Administration > Configuration > Webhooks > Create**.
 2. Add the Jenkins server URL for the webhook: `http://<JENKINS_HOST>/sonarqube-webhook/`.
 3. Save the configuration.
+
+![](img/sonarqube%20webhook.png)
+
+
+4. Configure SonarQubeScanner tool:
+>Manage jenkins > Tools > Add SonarQube scanner 
 
 ---
 
@@ -1775,6 +1805,8 @@ stage('SonarQube Quality Gate') {
     }
 }
 ```
+
+![](img/sonar%20fail.png)
 >note: The above step will fail because we have not updated `sonar-scanner.properties
 
 ### 2. Configure `sonar-scanner.properties`
