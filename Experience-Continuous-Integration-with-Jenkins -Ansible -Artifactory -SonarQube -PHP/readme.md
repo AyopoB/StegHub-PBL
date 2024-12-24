@@ -1565,6 +1565,9 @@ sudo systemctl enable postgresql
    sudo mv /opt/sonarqube-7.9.3 /opt/sonarqube
    ```
 
+
+   ![](img/install%20sonar%20qube.png)
+
 ---
 
 
@@ -1605,15 +1608,18 @@ To prevent running SonarQube as the root user:
 
 3. Save and close the file.
 
+![](img/edit%20sonar%20db%20prop.png)
+
 4. Edit the SonarQube script file to specify the `sonar` user:
    ```bash
-   sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh
+   sudo vi /opt/sonarqube/bin/linux-x86-64/sonar.sh
    ```
 5. Update the `RUN_AS_USER` field:
    ```bash
    RUN_AS_USER=sonar
    ```
 
+![](img/specify%20run%20as%20user%20sonar.png)
 ---
 
 ## Step 3: Start SonarQube
@@ -1643,10 +1649,16 @@ To prevent running SonarQube as the root user:
    ```plaintext
    SonarQube is running (PID).
    ```
+
+![](img/susonar.png)
+
 5. To monitor logs:
    ```bash
    tail /opt/sonarqube/logs/sonar.log
    ```
+
+![](img/sonar%20logs.png)
+
 
 ---
 
@@ -1658,7 +1670,7 @@ To prevent running SonarQube as the root user:
    ```
 2. Create a systemd service file:
    ```bash
-   sudo nano /etc/systemd/system/sonar.service
+   sudo vi /etc/systemd/system/sonar.service
    ```
 3. Add the following configuration:
    ```ini
