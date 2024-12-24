@@ -1406,6 +1406,8 @@ ulimit -n 65536
 ulimit -u 4096
 ```
 
+![](img/tune%20kernel.png)
+
 #### Permanent Changes
 To make these changes persistent:
 1. Edit the file `/etc/security/limits.conf`.
@@ -1415,6 +1417,7 @@ To make these changes persistent:
    sonarqube - nproc 4096
    ```
 
+![](img/make%20permanent.png)
 ---
 
 ### Step 2: Update and Upgrade System Packages
@@ -1431,6 +1434,8 @@ Install `wget` and `unzip`:
 sudo apt-get install wget unzip -y
 ```
 
+![](img/install%20unzip.png)
+
 ---
 
 ### Step 4: Install OpenJDK and Java Runtime Environment (JRE) 11
@@ -1439,6 +1444,8 @@ SonarQube is Java-based, so installing Java is a prerequisite.
 sudo apt-get install openjdk-11-jdk -y
 sudo apt-get install openjdk-11-jre -y
 ```
+
+
 
 #### Set Default JDK
 If multiple versions of Java are installed, set OpenJDK 11 as the default:
@@ -1452,6 +1459,10 @@ From the list, select OpenJDK 11 by entering the corresponding number.
 ```bash
 java -version
 ```
+
+![](img/java%20version.png)
+
+
 Expected output:
 ```plaintext
 openjdk version "11.0.7" 2020-04-14
@@ -1467,6 +1478,8 @@ OpenJDK 64-Bit Server VM (build 11.0.7+10-post-Ubuntu-3ubuntu1, mixed mode, shar
 ```bash
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
 ```
+
+
 
 #### Add PostgreSQL Key
 ```bash
@@ -1484,6 +1497,9 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 ```
 
+![](img/start%20and%20enable%20postgre.png)
+
+
 #### Configure PostgreSQL
 1. Change the password for the default `postgres` user:
    ```bash
@@ -1493,15 +1509,38 @@ sudo systemctl enable postgresql
    ```bash
    su - postgres
    ```
+
+   ![](img/change%20postgre%20password.png)
+
 3. Create a new user and database for SonarQube:
+- Create a new user by typing
    ```bash
    createuser sonar
+   ```
+- Switch to the PostgreSQL shell
+   ```bash
    psql
+   ```
+- Set a password for the newly created user for SonarQube database
+   ```postgres
    ALTER USER sonar WITH ENCRYPTED password 'sonar';
+   ```
+- Create a new database for PostgreSQL database by running:
+   ```postgres
    CREATE DATABASE sonarqube OWNER sonar;
+   ```
+- Grant all privileges to sonar user on sonarqube Database. 
+   ```postgres
    grant all privileges on DATABASE sonarqube to sonar;
+   ````
+- Exit from the psql shell 
+   ```ppstgres
    \q
    ```
+
+![](img/create%20user%20sonar.png)
+
+
 4. Exit the `postgres` user:
    ```bash
    exit
