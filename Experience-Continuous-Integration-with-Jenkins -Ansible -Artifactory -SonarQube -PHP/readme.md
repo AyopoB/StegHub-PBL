@@ -1921,32 +1921,76 @@ Jenkins architecture is fundamentally "Master+Agent". The master is designed to 
 
 1. Add two servers as Jenkins agents (Create two t2.medium) and install Java 17 on them.
 
+![](img/aaded%20slaves.png)
 
-- ```bash
+
+- Install Java
+ ```bash
 sudo apt update
 sudo apt install fontconfig openjdk-17-jre
 ```
 
 2. Configure Jenkins to run jobs on any available slave node.
 
+- Go to dashboard > manage jenkins > security > Agents
+
+- Set the TCP port for inbound agents to fixed and set the port at 5000 ( or any one you choose )
+
+![](img/security%20agents.png)
+
+- Navigate to Dashboard > Manage Jenkins > Nodes
+- Create new node
+
+![](img/new%20node.png)
+
+- Name: slave_1
+- Add `/opt/build` in the remote directory space
+(This can be any directory for the builds) 
+- Labels: slave_1 
+- Save
+
+![](img/slave%20node%20saved.png)
+
+![](img/agent%20keys.png)
+
+
+- go back to slave terminal and run the  following command 
+
+```bash
+sudo mkdir -p /opt/build
+sudo chown -R ubuntu:ubuntu /opt/build
+sudo chmod -R 755 /opt/build
+ls -ld /opt/build
+```
+
+```bash
+curl -sO http://54.172.13.141:8080/jnlpJars/agent.jar
+
+
+java -jar agent.jar -url http://54.172.13.141:8080/ -secret 654f1b09f00eb7476ab609cc5a304651e01dc69849e193abf048869c61850a1d -name "slave_1" -workDir "/opt/build"
+```
+
+![](img/jar%20command%20success.png)
+
+- Repeat for slave_2
+
+
+![](img/slave%201%20connected.png)
+
+
+![](img/slave%202%20connected.png)
+
+![](img/nodes.png)
+
 ### 2. Webhook Between Jenkins and GitHub
 
-1. Set up a webhook in GitHub to trigger the Jenkins pipeline upon code push.
-2. Validate that the pipeline runs automatically.
+1. Set up a webhook in GitHub to trigger the Jenkins pipeline upon code push. 
 
-### 3. Application Deployment
+![](img/github%20webhook%20.png)
 
-Deploy the application to all environments, ensuring code passes quality gates.
 
----
 
-## Optional: Pentesting with Wireshark
 
-1. Configure a pentest environment.
-2. Use Wireshark for packet analysis.
-3. For automation, use Ansible roles:
-   - [Ansible Wireshark Role (Ubuntu)](https://github.com/ymajik/ansible-role-wireshark)
-   - [Ansible Wireshark Role (RedHat)](https://github.com/wtanaka/ansible-role-wireshark)
 
 ---
 
