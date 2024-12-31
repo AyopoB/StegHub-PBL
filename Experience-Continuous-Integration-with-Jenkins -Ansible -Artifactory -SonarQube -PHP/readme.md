@@ -1004,7 +1004,7 @@ ansible-playbook -i inventory/dev.yml playbook.yml --tags "webserver"
 
 We previously set up a **tooling website** deployment through Ansible. Now, we are adding another PHP application to our infrastructure management. This application includes unit tests, making it ideal for demonstrating an end-to-end CI/CD pipeline.
 
-The deployment goal is to use **Artifactory** for storing and deploying code artifacts, bypassing direct Git integration.
+The deployment goal is to use **Artifactory** for storing and deploying code artifacts, bypassing direct Git integration, this will be done by installing artifactory on a new server.
 
 ### Install Artifactory 
 Install artifactory by following this guide [Install artifactory on Ubuntu 24.04 LTS](https://www.fosstechnix.com/install-jfrog-artifactory-on-ubuntu-24-04-lts/)
@@ -1441,8 +1441,8 @@ sudo apt-get install wget unzip -y
 ### Step 4: Install OpenJDK and Java Runtime Environment (JRE) 11
 SonarQube is Java-based, so installing Java is a prerequisite.
 ```bash
-sudo apt-get install openjdk-11-jdk -y
-sudo apt-get install openjdk-11-jre -y
+sudo apt-get install openjdk-17-jdk -y
+sudo apt-get install openjdk-17-jre -y
 ```
 
 
@@ -1463,12 +1463,7 @@ java -version
 ![](img/java%20version.png)
 
 
-Expected output:
-```plaintext
-openjdk version "11.0.7" 2020-04-14
-OpenJDK Runtime Environment (build 11.0.7+10-post-Ubuntu-3ubuntu1)
-OpenJDK 64-Bit Server VM (build 11.0.7+10-post-Ubuntu-3ubuntu1, mixed mode, sharing)
-```
+
 
 ---
 
@@ -1557,12 +1552,12 @@ sudo systemctl enable postgresql
    ```
 2. Download SonarQube:
    ```bash
-   sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.9.3.zip
+    sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.8.100196.zip
    ```
 3. Extract the downloaded archive to the `/opt` directory:
    ```bash
-   sudo unzip sonarqube-7.9.3.zip -d /opt
-   sudo mv /opt/sonarqube-7.9.3 /opt/sonarqube
+   sudo unzip sonarqube-9.9.8.100196.zip -d /opt
+   sudo mv /opt/sonarqube-9.9.8.100196 /opt/sonarqube
    ```
 
 
@@ -1715,8 +1710,11 @@ To prevent running SonarQube as the root user:
 ---
 
 ## Step 5: Access SonarQube
-
-1. Open your browser and navigate to the SonarQube instance:
+1. Visit sonarqube config file and uncomment the line of sonar.web.port=9000 
+```bash
+sudo vi /opt/sonarqube/conf/sonar.properties
+```
+2. Open your browser and navigate to the SonarQube instance:
 
 >firstly add an inbound rule for port 9000 in your AWS security group
 
@@ -1843,16 +1841,23 @@ ls -latr
 ```
 You should see files like `sonar-scanner` and `sonar-scanner-debug`.
 
+- Run the build again
 
+![](img/quality%20gate%20first%20success.png)
 
 ### 4. Generate Pipeline Syntax
 
 To generate additional code snippets for SonarQube integration:
 
 1. Navigate to **Dashboard > Pipeline Syntax** in Jenkins.
-2. cClick on steps then, Select `withSonarQubeEnv`.
+2. Click on steps then, Select `withSonarQubeEnv`.
 3. Generate and add the required block to your pipeline.
 
+![](img/pipeline%20syntax.png)
+
+- Run the build again
+
+![](img/quality%20gate%20first%20success.png)
 ---
 
 ## Implementing Quality Gate Conditions
