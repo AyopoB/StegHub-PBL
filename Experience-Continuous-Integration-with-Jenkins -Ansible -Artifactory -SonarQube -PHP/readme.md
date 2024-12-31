@@ -1858,6 +1858,15 @@ To generate additional code snippets for SonarQube integration:
 - Run the build again
 
 ![](img/quality%20gate%20first%20success.png)
+
+5. But we are not completely done yet!
+
+The quality gate we just included has no effect. Why? Well, because if you go to the SonarQube UI, you will realise that we just pushed a poor-quality code onto the development environment.
+
+- Navigate to php-todo project in SonarQube
+
+![](img/sonar%20status.png)
+
 ---
 
 ## Implementing Quality Gate Conditions
@@ -1908,8 +1917,16 @@ Ensure deployment happens only from allowed branches.
 ## Additional Configuration Tasks
 
 ### 1. Jenkins Agents/Slaves
+Jenkins architecture is fundamentally "Master+Agent". The master is designed to do co-ordination and provide the GUI and API endpoints, and the Agents are designed to perform the work. The reason being that workloads are often best "farmed out" to distributed servers.
 
-1. Add two servers as Jenkins agents.
+1. Add two servers as Jenkins agents (Create two t2.medium) and install Java 17 on them.
+
+
+- ```bash
+sudo apt update
+sudo apt install fontconfig openjdk-17-jre
+```
+
 2. Configure Jenkins to run jobs on any available slave node.
 
 ### 2. Webhook Between Jenkins and GitHub
